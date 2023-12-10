@@ -337,9 +337,10 @@ function(qt_internal_add_module target)
     if((UIKIT OR WASM) AND BUILD_SHARED_LIBS)
         set(version_args "")
     else()
-        set(version_args
-            VERSION ${PROJECT_VERSION}
-            SOVERSION ${PROJECT_VERSION_MAJOR})
+	    #target_link_options(${target} PUBLIC "-Wl,-soname,/llvm-libcxx/${CMAKE_INSTALL_LIBDIR}/libc++.so")
+	    #        set(version_args
+	    #            VERSION ${PROJECT_VERSION}
+	    #            SOVERSION ${PROJECT_VERSION_MAJOR})
     endif()
 
     if(NOT arg_HEADER_MODULE)
@@ -395,6 +396,8 @@ function(qt_internal_add_module target)
         if (WIN32 AND BUILD_SHARED_LIBS)
             _qt_internal_generate_win32_rc_file(${target})
         endif()
+	set_target_properties(${target} PROPERTIES NO_SONAME TRUE)
+	target_link_options(${target} PRIVATE "-Wl,-soname,/qtbase/${CMAKE_INSTALL_LIBDIR}/libQt6${target}.so")
     endif()
 
     # Module headers:
@@ -788,7 +791,7 @@ set(QT_ALLOW_MISSING_TOOLS_PACKAGES TRUE)")
     )
 
     if(BUILD_SHARED_LIBS)
-        qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
+        #qt_apply_rpaths(TARGET "${target}" INSTALL_PATH "${INSTALL_LIBDIR}" RELATIVE_RPATH)
         qt_internal_apply_staging_prefix_build_rpath_workaround()
     endif()
 

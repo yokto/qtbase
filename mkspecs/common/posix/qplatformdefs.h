@@ -5,6 +5,7 @@
 #define Q_POSIX_QPLATFORMDEFS_H
 
 #include <signal.h>
+#include <unistd.h>
 
 #include <sys/types.h>
 #ifndef QT_NO_SOCKET_H
@@ -35,7 +36,7 @@
 #define QT_FGETPOS              ::fgetpos64
 #define QT_FSETPOS              ::fsetpos64
 
-#define QT_MMAP                 ::mmap64
+//#define QT_MMAP                 ::mmap64
 
 #else // !defined(QT_USE_XOPEN_LFS_EXTENSIONS) || !defined(QT_LARGEFILE_SUPPORT)
 
@@ -65,7 +66,7 @@
 #define QT_FTELL                ::ftello
 #endif
 
-#define QT_MMAP                 ::mmap
+//#define QT_MMAP                 ::mmap
 
 #endif // !defined (QT_USE_XOPEN_LFS_EXTENSIONS) || !defined(QT_LARGEFILE_SUPPORT)
 

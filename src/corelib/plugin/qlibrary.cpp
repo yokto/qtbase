@@ -172,15 +172,15 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
       More importantly, the pattern string may exist in the debug information due
       to it being used in the plugin in the first place.
     */
-#if defined(Q_OF_ELF)
-    return QElfParser::parse({s, s_len}, errMsg);
-#elif defined(Q_OF_MACH_O)
-    return QMachOParser::parse(s, s_len, errMsg);
-#elif defined(Q_OS_WIN)
-    return QCoffPeParser::parse({s, s_len}, errMsg);
-#else
+//#if defined(Q_OF_ELF)
+//    return QElfParser::parse({s, s_len}, errMsg);
+//#elif defined(Q_OF_MACH_O)
+//    return QMachOParser::parse(s, s_len, errMsg);
+//#elif defined(Q_OS_WIN)
+//    return QCoffPeParser::parse({s, s_len}, errMsg);
+//#else
 #   warning "Qt does not know how to efficiently parse your platform's binary format; using slow fall-back."
-#endif
+//#endif
     static constexpr auto matcher = [] {
         // QPluginMetaData::MagicString is not NUL-terminated, but
         // qMakeStaticByteArrayMatcher requires its argument to be, so

@@ -115,7 +115,7 @@ static bool checkXdgRuntimeDir(const QString &xdgRuntimeDir)
     };
 
     // http://standards.freedesktop.org/basedir-spec/latest/
-    const uint myUid = uint(geteuid());
+    //const uint myUid = uint(geteuid());
     const QFile::Permissions wantedPerms = QFile::ReadOwner | QFile::WriteOwner | QFile::ExeOwner;
     const QFileSystemMetaData::MetaDataFlags statFlags = QFileSystemMetaData::PosixStatFlags
                                                          | QFileSystemMetaData::LinkType;
@@ -152,11 +152,11 @@ static bool checkXdgRuntimeDir(const QString &xdgRuntimeDir)
     }
 
     // - "The directory MUST be owned by the user"
-    if (metaData.userId() != myUid) {
-        qWarning("QStandardPaths: runtime directory '%ls' is not owned by UID %d, but %s",
-                 qUtf16Printable(xdgRuntimeDir), myUid, describeMetaData(metaData).constData());
-        return false;
-    }
+//    if (metaData.userId() != myUid) {
+//        qWarning("QStandardPaths: runtime directory '%ls' is not owned by UID %d, but %s",
+//                 qUtf16Printable(xdgRuntimeDir), myUid, describeMetaData(metaData).constData());
+//        return false;
+//    }
 
     // "and he MUST be the only one having read and write access to it. Its Unix access mode MUST be 0700."
     if (metaData.permissions() != wantedPerms) {
@@ -244,9 +244,9 @@ QString QStandardPaths::writableLocation(StandardLocation type)
         bool fromEnv = !xdgRuntimeDir.isEmpty();
         if (xdgRuntimeDir.isEmpty() || !checkXdgRuntimeDir(xdgRuntimeDir)) {
             // environment variable not set or is set to something unsuitable
-            const uint myUid = uint(geteuid());
-            const QString userName = QFileSystemEngine::resolveUserName(myUid);
-            xdgRuntimeDir = QDir::tempPath() + "/runtime-"_L1 + userName;
+            //const uint myUid = uint(geteuid());
+            //const QString userName = QFileSystemEngine::resolveUserName(myUid);
+            xdgRuntimeDir = QDir::tempPath() + "/runtime-"_L1;//+ userName;
 
             if (!fromEnv) {
 #ifndef Q_OS_WASM

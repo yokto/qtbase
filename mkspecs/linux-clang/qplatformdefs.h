@@ -22,23 +22,23 @@
 // We are hot - unistd.h should have turned on the specific APIs we requested
 
 #include <features.h>
-#include <pthread.h>
+#include <threads.h>
 #include <dirent.h>
 #include <fcntl.h>
-#include <grp.h>
+//#include <grp.h>
 #include <pwd.h>
 #include <signal.h>
 #include <dlfcn.h>
 
 #include <sys/types.h>
-#include <sys/ioctl.h>
-#include <sys/ipc.h>
+//#include <sys/ioctl.h>
+//#include <sys/ipc.h>
 #include <sys/time.h>
-#include <sys/shm.h>
-#include <sys/socket.h>
+//#include <sys/shm.h>
+//#include <sys/socket.h>
 #include <sys/stat.h>
 #include <sys/wait.h>
-#include <netinet/in.h>
+//#include <netinet/in.h>
 
 #define QT_USE_XOPEN_LFS_EXTENSIONS
 #include "../common/posix/qplatformdefs.h"

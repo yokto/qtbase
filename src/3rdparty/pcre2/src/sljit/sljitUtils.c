@@ -99,7 +99,7 @@ static int dev_zero = -1;
 
 static SLJIT_INLINE int open_dev_zero(void)
 {
-	dev_zero = open("/dev/zero", O_RDWR | SLJIT_CLOEXEC);
+	//dev_zero = open("/dev/zero", O_RDWR | SLJIT_CLOEXEC);
 
 	return dev_zero < 0;
 }

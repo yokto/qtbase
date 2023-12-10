@@ -1783,6 +1783,7 @@ bool SyncScanner::writeIfDifferent(const std::string &outputFile, const std::str
     return true;
 }
 
+__attribute__ ((visibility ("default")))
 int main(int argc, char *argv[])
 {
     CommandLineOptions options(argc, argv);

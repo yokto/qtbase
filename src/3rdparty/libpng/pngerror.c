@@ -17,6 +17,7 @@
  */
 
 #include "pngpriv.h"
+#include <setjmp.h>
 
 #if defined(PNG_READ_SUPPORTED) || defined(PNG_WRITE_SUPPORTED)
 

@@ -55,7 +55,7 @@ Q_FORWARD_DECLARE_OBJC_CLASS(NSString);
 extern "C" NSString *NSTemporaryDirectory();
 #endif
 
-#if defined(Q_OS_LINUX)
+#if 0 // defined(Q_OS_LINUX)
 #  include <sys/ioctl.h>
 #  include <sys/sendfile.h>
 #  include <linux/fs.h>
@@ -763,65 +763,65 @@ QByteArray QFileSystemEngine::id(int fd)
 //static
 QString QFileSystemEngine::resolveUserName(uint userId)
 {
-#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-    long size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (size_max == -1)
-        size_max = 1024;
-    QVarLengthArray<char, 1024> buf(size_max);
-#endif
-
-#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
-    struct passwd *pw = nullptr;
-#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS)
-    struct passwd entry;
-    getpwuid_r(userId, &entry, buf.data(), buf.size(), &pw);
-#else
-    pw = getpwuid(userId);
-#endif
-    if (pw)
-        return QFile::decodeName(QByteArray(pw->pw_name));
-#else // Integrity || WASM
-    Q_UNUSED(userId);
-#endif
+//#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
+//    long size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
+//    if (size_max == -1)
+//        size_max = 1024;
+//    QVarLengthArray<char, 1024> buf(size_max);
+//#endif
+//
+//#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
+//    struct passwd *pw = nullptr;
+//#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS)
+//    struct passwd entry;
+//    getpwuid_r(userId, &entry, buf.data(), buf.size(), &pw);
+//#else
+//    pw = getpwuid(userId);
+//#endif
+//    if (pw)
+//        return QFile::decodeName(QByteArray(pw->pw_name));
+//#else // Integrity || WASM
+//    Q_UNUSED(userId);
+//#endif
     return QString();
 }
 
 //static
 QString QFileSystemEngine::resolveGroupName(uint groupId)
 {
-#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
-    long size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
-    if (size_max == -1)
-        size_max = 1024;
-    QVarLengthArray<char, 1024> buf(size_max);
-#endif
-
-#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
-    struct group *gr = nullptr;
-#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID) && (__ANDROID_API__ >= 24))
-    size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
-    if (size_max == -1)
-        size_max = 1024;
-    buf.resize(size_max);
-    struct group entry;
-    // Some large systems have more members than the POSIX max size
-    // Loop over by doubling the buffer size (upper limit 250k)
-    for (long size = size_max; size < 256000; size += size)
-    {
-        buf.resize(size);
-        // ERANGE indicates that the buffer was too small
-        if (!getgrgid_r(groupId, &entry, buf.data(), buf.size(), &gr)
-            || errno != ERANGE)
-            break;
-    }
-#else
-    gr = getgrgid(groupId);
-#endif
-    if (gr)
-        return QFile::decodeName(QByteArray(gr->gr_name));
-#else // Integrity || WASM
-    Q_UNUSED(groupId);
-#endif
+//#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD)
+//    long size_max = sysconf(_SC_GETPW_R_SIZE_MAX);
+//    if (size_max == -1)
+//        size_max = 1024;
+//    QVarLengthArray<char, 1024> buf(size_max);
+//#endif
+//
+//#if !defined(Q_OS_INTEGRITY) && !defined(Q_OS_WASM)
+//    struct group *gr = nullptr;
+//#if QT_CONFIG(thread) && defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_VXWORKS) && (!defined(Q_OS_ANDROID) || defined(Q_OS_ANDROID) && (__ANDROID_API__ >= 24))
+//    size_max = sysconf(_SC_GETGR_R_SIZE_MAX);
+//    if (size_max == -1)
+//        size_max = 1024;
+//    buf.resize(size_max);
+//    struct group entry;
+//    // Some large systems have more members than the POSIX max size
+//    // Loop over by doubling the buffer size (upper limit 250k)
+//    for (long size = size_max; size < 256000; size += size)
+//    {
+//        buf.resize(size);
+//        // ERANGE indicates that the buffer was too small
+//        if (!getgrgid_r(groupId, &entry, buf.data(), buf.size(), &gr)
+//            || errno != ERANGE)
+//            break;
+//    }
+//#else
+//    gr = getgrgid(groupId);
+//#endif
+//    if (gr)
+//        return QFile::decodeName(QByteArray(gr->gr_name));
+//#else // Integrity || WASM
+//    Q_UNUSED(groupId);
+//#endif
     return QString();
 }
 
@@ -1042,7 +1042,7 @@ bool QFileSystemEngine::cloneFile(int srcfd, int dstfd, const QFileSystemMetaDat
         return false;
     }
 
-#if defined(Q_OS_LINUX)
+#if 0 // defined(Q_OS_LINUX)
     // first, try FICLONE (only works on regular files and only on certain fs)
     if (::ioctl(dstfd, FICLONE, srcfd) == 0)
         return true;
@@ -1186,97 +1186,98 @@ bool QFileSystemEngine::createLink(const QFileSystemEntry &source, const QFileSy
 #ifndef QT_BOOTSTRAPPED
 static QString freeDesktopTrashLocation(const QString &sourcePath)
 {
-    auto makeTrashDir = [](const QDir &topDir, const QString &trashDir = QString()) {
-        auto ownerPerms = QFileDevice::ReadOwner
-                        | QFileDevice::WriteOwner
-                        | QFileDevice::ExeOwner;
-        QString targetDir = topDir.filePath(trashDir);
-        // deliberately not using mkpath, since we want to fail if topDir doesn't exist
-        bool created = QFileSystemEngine::createDirectory(QFileSystemEntry(targetDir), false, ownerPerms);
-        if (created)
-            return targetDir;
-        // maybe it already exists and is a directory
-        if (QFileInfo(targetDir).isDir())
-            return targetDir;
-        return QString();
-    };
-
-    QString trash;
-    const QStorageInfo sourceStorage(sourcePath);
-    const QStorageInfo homeStorage(QDir::home());
-    // We support trashing of files outside the users home partition
-    if (sourceStorage != homeStorage) {
-        const auto dotTrash = "/.Trash"_L1;
-        QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
-
-        /*
-            Method 1:
-            "An administrator can create an $topdir/.Trash directory. The permissions on this
-            directories should permit all users who can trash files at all to write in it;
-            and the “sticky bit” in the permissions must be set, if the file system supports
-            it.
-            When trashing a file from a non-home partition/device, an implementation
-            (if it supports trashing in top directories) MUST check for the presence
-            of $topdir/.Trash."
-        */
-
-        const QString userID = QString::number(::getuid());
-        if (QT_STATBUF st; QT_LSTAT(dotTrashDir.nativeFilePath(), &st) == 0) {
-            // we MUST check that the sticky bit is set, and that it is not a symlink
-            if (S_ISLNK(st.st_mode)) {
-                // we SHOULD report the failed check to the administrator
-                qCritical("Warning: '%s' is a symlink to '%s'",
-                          dotTrashDir.nativeFilePath().constData(),
-                          qt_readlink(dotTrashDir.nativeFilePath()).constData());
-            } else if ((st.st_mode & S_ISVTX) == 0) {
-                // we SHOULD report the failed check to the administrator
-                qCritical("Warning: '%s' doesn't have sticky bit set!",
-                          dotTrashDir.nativeFilePath().constData());
-            } else if (S_ISDIR(st.st_mode)) {
-                /*
-                    "If the directory exists and passes the checks, a subdirectory of the
-                     $topdir/.Trash directory is to be used as the user's trash directory
-                     for this partition/device. The name of this subdirectory is the numeric
-                     identifier of the current user ($topdir/.Trash/$uid).
-                     When trashing a file, if this directory does not exist for the current user,
-                     the implementation MUST immediately create it, without any warnings or
-                     delays for the user."
-                */
-                trash = makeTrashDir(dotTrashDir.filePath(), userID);
-            }
-        }
-        /*
-            Method 2:
-            "If an $topdir/.Trash directory is absent, an $topdir/.Trash-$uid directory is to be
-             used as the user's trash directory for this device/partition. [...] When trashing a
-             file, if an $topdir/.Trash-$uid directory does not exist, the implementation MUST
-             immediately create it, without any warnings or delays for the user."
-        */
-        if (trash.isEmpty()) {
-            const QString userTrashDir = dotTrash + u'-' + userID;
-            trash = makeTrashDir(QDir(sourceStorage.rootPath() + userTrashDir));
-        }
-    }
-    /*
-        "If both (1) and (2) fail [...], the implementation MUST either trash the
-         file into the user's “home trash” or refuse to trash it."
-
-         We trash the file into the user's home trash.
-
-        "Its name and location are $XDG_DATA_HOME/Trash"; $XDG_DATA_HOME is what
-        QStandardPaths returns for GenericDataLocation. If that doesn't exist, then
-        we are not running on a freedesktop.org-compliant environment, and give up.
-    */
-    if (trash.isEmpty()) {
-        QDir topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
-        trash = makeTrashDir(topDir, "Trash"_L1);
-        if (!QFileInfo(trash).isDir()) {
-            qWarning("Unable to establish trash directory in %s",
-                     topDir.path().toLocal8Bit().constData());
-        }
-    }
-
-    return trash;
+	return QString();
+//    auto makeTrashDir = [](const QDir &topDir, const QString &trashDir = QString()) {
+//        auto ownerPerms = QFileDevice::ReadOwner
+//                        | QFileDevice::WriteOwner
+//                        | QFileDevice::ExeOwner;
+//        QString targetDir = topDir.filePath(trashDir);
+//        // deliberately not using mkpath, since we want to fail if topDir doesn't exist
+//        bool created = QFileSystemEngine::createDirectory(QFileSystemEntry(targetDir), false, ownerPerms);
+//        if (created)
+//            return targetDir;
+//        // maybe it already exists and is a directory
+//        if (QFileInfo(targetDir).isDir())
+//            return targetDir;
+//        return QString();
+//    };
+//
+//    QString trash;
+//    const QStorageInfo sourceStorage(sourcePath);
+//    const QStorageInfo homeStorage(QDir::home());
+//    // We support trashing of files outside the users home partition
+//    if (sourceStorage != homeStorage) {
+//        const auto dotTrash = "/.Trash"_L1;
+//        QFileSystemEntry dotTrashDir(sourceStorage.rootPath() + dotTrash);
+//
+//        /*
+//            Method 1:
+//            "An administrator can create an $topdir/.Trash directory. The permissions on this
+//            directories should permit all users who can trash files at all to write in it;
+//            and the “sticky bit” in the permissions must be set, if the file system supports
+//            it.
+//            When trashing a file from a non-home partition/device, an implementation
+//            (if it supports trashing in top directories) MUST check for the presence
+//            of $topdir/.Trash."
+//        */
+//
+//        const QString userID = QString::number(::getuid());
+//        if (QT_STATBUF st; QT_LSTAT(dotTrashDir.nativeFilePath(), &st) == 0) {
+//            // we MUST check that the sticky bit is set, and that it is not a symlink
+//            if (S_ISLNK(st.st_mode)) {
+//                // we SHOULD report the failed check to the administrator
+//                qCritical("Warning: '%s' is a symlink to '%s'",
+//                          dotTrashDir.nativeFilePath().constData(),
+//                          qt_readlink(dotTrashDir.nativeFilePath()).constData());
+//            } else if ((st.st_mode & S_ISVTX) == 0) {
+//                // we SHOULD report the failed check to the administrator
+//                qCritical("Warning: '%s' doesn't have sticky bit set!",
+//                          dotTrashDir.nativeFilePath().constData());
+//            } else if (S_ISDIR(st.st_mode)) {
+//                /*
+//                    "If the directory exists and passes the checks, a subdirectory of the
+//                     $topdir/.Trash directory is to be used as the user's trash directory
+//                     for this partition/device. The name of this subdirectory is the numeric
+//                     identifier of the current user ($topdir/.Trash/$uid).
+//                     When trashing a file, if this directory does not exist for the current user,
+//                     the implementation MUST immediately create it, without any warnings or
+//                     delays for the user."
+//                */
+//                trash = makeTrashDir(dotTrashDir.filePath(), userID);
+//            }
+//        }
+//        /*
+//            Method 2:
+//            "If an $topdir/.Trash directory is absent, an $topdir/.Trash-$uid directory is to be
+//             used as the user's trash directory for this device/partition. [...] When trashing a
+//             file, if an $topdir/.Trash-$uid directory does not exist, the implementation MUST
+//             immediately create it, without any warnings or delays for the user."
+//        */
+//        if (trash.isEmpty()) {
+//            const QString userTrashDir = dotTrash + u'-' + userID;
+//            trash = makeTrashDir(QDir(sourceStorage.rootPath() + userTrashDir));
+//        }
+//    }
+//    /*
+//        "If both (1) and (2) fail [...], the implementation MUST either trash the
+//         file into the user's “home trash” or refuse to trash it."
+//
+//         We trash the file into the user's home trash.
+//
+//        "Its name and location are $XDG_DATA_HOME/Trash"; $XDG_DATA_HOME is what
+//        QStandardPaths returns for GenericDataLocation. If that doesn't exist, then
+//        we are not running on a freedesktop.org-compliant environment, and give up.
+//    */
+//    if (trash.isEmpty()) {
+//        QDir topDir = QStandardPaths::writableLocation(QStandardPaths::GenericDataLocation);
+//        trash = makeTrashDir(topDir, "Trash"_L1);
+//        if (!QFileInfo(trash).isDir()) {
+//            qWarning("Unable to establish trash directory in %s",
+//                     topDir.path().toLocal8Bit().constData());
+//        }
+//    }
+//
+//    return trash;
 }
 #endif // QT_BOOTSTRAPPED
 

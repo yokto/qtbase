@@ -21,11 +21,11 @@
 #elif defined(Q_OS_ANDROID)
 #  include <sys/mount.h>
 #  include <sys/vfs.h>
-#  include <mntent.h>
+//#  include <mntent.h>
 #elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
-#  include <mntent.h>
+//#  include <mntent.h>
 #  include <sys/statvfs.h>
-#  include <sys/sysmacros.h>
+//#  include <sys/sysmacros.h>
 #elif defined(Q_OS_SOLARIS)
 #  include <sys/mnttab.h>
 #  include <sys/statvfs.h>
@@ -113,35 +113,35 @@ private:
     QByteArray m_device;
     QByteArray m_options;
 #elif defined(Q_OS_LINUX) || defined(Q_OS_HURD)
-    struct mountinfoent : public mntent {
-        // Details from proc(5) section from /proc/<pid>/mountinfo:
-        //(1)  mount ID: a unique ID for the mount (may be reused after umount(2)).
-        int mount_id;
-        //(2)  parent ID: the ID of the parent mount (or of self for the top of the mount tree).
-//      int parent_id;
-        //(3)  major:minor: the value of st_dev for files on this filesystem (see stat(2)).
-        dev_t rdev;
-        //(4)  root: the pathname of the directory in the filesystem which forms the root of this mount.
-        char *subvolume;
-        //(5)  mount point: the pathname of the mount point relative to the process's root directory.
-//      char *mnt_dir;      // in mntent
-        //(6)  mount options: per-mount options.
-//      char *mnt_opts;     // in mntent
-        //(7)  optional fields: zero or more fields of the form "tag[:value]"; see below.
-//      int flags;
-        //(8)  separator: the end of the optional fields is marked by a single hyphen.
-
-        //(9)  filesystem type: the filesystem type in the form "type[.subtype]".
-//      char *mnt_type;     // in mntent
-        //(10) mount source: filesystem-specific information or "none".
-//      char *mnt_fsname;   // in mntent
-        //(11) super options: per-superblock options.
-        char *superopts;
-    };
+//    struct mountinfoent : public mntent {
+//        // Details from proc(5) section from /proc/<pid>/mountinfo:
+//        //(1)  mount ID: a unique ID for the mount (may be reused after umount(2)).
+//        int mount_id;
+//        //(2)  parent ID: the ID of the parent mount (or of self for the top of the mount tree).
+////      int parent_id;
+//        //(3)  major:minor: the value of st_dev for files on this filesystem (see stat(2)).
+//        dev_t rdev;
+//        //(4)  root: the pathname of the directory in the filesystem which forms the root of this mount.
+//        char *subvolume;
+//        //(5)  mount point: the pathname of the mount point relative to the process's root directory.
+////      char *mnt_dir;      // in mntent
+//        //(6)  mount options: per-mount options.
+////      char *mnt_opts;     // in mntent
+//        //(7)  optional fields: zero or more fields of the form "tag[:value]"; see below.
+////      int flags;
+//        //(8)  separator: the end of the optional fields is marked by a single hyphen.
+//
+//        //(9)  filesystem type: the filesystem type in the form "type[.subtype]".
+////      char *mnt_type;     // in mntent
+//        //(10) mount source: filesystem-specific information or "none".
+////      char *mnt_fsname;   // in mntent
+//        //(11) super options: per-superblock options.
+//        char *superopts;
+//    };
 
     FILE *fp;
     QByteArray buffer;
-    mountinfoent mnt;
+    int mnt;
     bool usingMountinfo;
 #elif defined(Q_OS_HAIKU)
     BVolumeRoster m_volumeRoster;
@@ -268,22 +268,23 @@ inline bool QStorageIterator::isValid() const
 
 inline bool QStorageIterator::next()
 {
-    return ::getmntent(fp, &mnt) == 0;
+	return 0;
+    //return ::getmntent(fp, &mnt) == 0;
 }
 
 inline QString QStorageIterator::rootPath() const
 {
-    return QFile::decodeName(mnt.mnt_mountp);
+    return QString() // QFile::decodeName(mnt.mnt_mountp);
 }
 
 inline QByteArray QStorageIterator::fileSystemType() const
 {
-    return QByteArray(mnt.mnt_fstype);
+    return QByteArray(); //mnt.mnt_fstype);
 }
 
 inline QByteArray QStorageIterator::device() const
 {
-    return QByteArray(mnt.mnt_mntopts);
+    return QByteArray(); // mnt.mnt_mntopts);
 }
 
 inline QByteArray QStorageIterator::subvolume() const
@@ -360,26 +361,27 @@ inline QStorageIterator::QStorageIterator() :
 {
     fp = nullptr;
 
-#ifdef Q_OS_LINUX
-    // first, try to open /proc/self/mountinfo, which has more details
-    fp = ::fopen("/proc/self/mountinfo", "re");
-#endif
-    if (fp) {
-        usingMountinfo = true;
-    } else {
-        usingMountinfo = false;
-        fp = ::setmntent(_PATH_MOUNTED, "r");
-    }
+//#ifdef Q_OS_LINUX
+//    // first, try to open /proc/self/mountinfo, which has more details
+//    fp = ::fopen("/proc/self/mountinfo", "re");
+//#endif
+//    if (fp) {
+//        usingMountinfo = true;
+//    } else {
+//        usingMountinfo = false;
+//        fp = ::setmntent(_PATH_MOUNTED, "r");
+//    }
+	usingMountinfo = false;
 }
 
 inline QStorageIterator::~QStorageIterator()
 {
-    if (fp) {
-        if (usingMountinfo)
-            ::fclose(fp);
-        else
-            ::endmntent(fp);
-    }
+//    if (fp) {
+//        if (usingMountinfo)
+//            ::fclose(fp);
+//        else
+//            ::endmntent(fp);
+//    }
 }
 
 inline bool QStorageIterator::isValid() const
@@ -389,200 +391,204 @@ inline bool QStorageIterator::isValid() const
 
 inline bool QStorageIterator::next()
 {
-    mnt.subvolume = nullptr;
-    mnt.superopts = nullptr;
-    if (!usingMountinfo)
-        return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != nullptr;
-
-    // Helper function to parse paths that the kernel inserts escape sequences
-    // for. The unescaped string is left at \a src and is properly
-    // NUL-terminated. Returns a pointer to the delimiter that terminated the
-    // path, or nullptr if it failed.
-    auto parseMangledPath = [](char *src) {
-        // The kernel escapes with octal the following characters:
-        //  space ' ', tab '\t', backslask '\\', and newline '\n'
-        char *dst = src;
-        while (*src) {
-            switch (*src) {
-            case ' ':
-                // Unescaped space: end of the field.
-                *dst = '\0';
-                return src;
-
-            default:
-                *dst++ = *src++;
-                break;
-
-            case '\\':
-                // It always uses exactly three octal characters.
-                ++src;
-                char c = (*src++ - '0') << 6;
-                c |= (*src++ - '0') << 3;
-                c |= (*src++ - '0');
-                *dst++ = c;
-                break;
-            }
-        }
-
-        // Found a NUL before the end of the field.
-        src = nullptr;
-        return src;
-    };
-
-    char *ptr = buffer.data();
-    if (fgets(ptr, buffer.size(), fp) == nullptr)
-        return false;
-
-    size_t len = strlen(ptr);
-    if (len == 0)
-        return false;
-    while (Q_UNLIKELY(ptr[len - 1] != '\n' && !feof(fp))) {
-        // buffer wasn't large enough. Enlarge and try again.
-        // (we're readidng from the kernel, so OOM is unlikely)
-        buffer.resize((buffer.size() + 4096) & ~4095);
-        ptr = buffer.data();
-        if (fgets(ptr + len, buffer.size() - len, fp) == nullptr)
-            return false;
-
-        len += strlen(ptr + len);
-        Q_ASSERT(len < size_t(buffer.size()));
-    }
-    ptr[len - 1] = '\0';
-    const char *const stop = ptr + len - 1;
-
-    // parse the line
-    mnt.mnt_freq = 0;
-    mnt.mnt_passno = 0;
-
-    auto r = qstrntoll(ptr, stop - ptr, 10);
-    if (!r.ok())
-        return false;
-    mnt.mount_id = r.result;
-
-    ptr += r.used;
-    r = qstrntoll(ptr, stop - ptr, 10);
-    if (!r.ok())
-        return false;
-    // parent_id = r.result; // member currently not in use
-
-    ptr += r.used;
-    r = qstrntoll(ptr, stop - ptr, 10);
-    if (!r.ok())
-        return false;
-    ptr += r.used;
-    if (*ptr != ':')
-        return false;
-    int rdevmajor = r.result;
-    ++ptr; // Skip over the ':'
-    r = qstrntoll(ptr, stop - ptr, 10);
-    if (!r.ok())
-        return false;
-    mnt.rdev = makedev(rdevmajor, r.result);
-
-    ptr += r.used;
-    if (*ptr != ' ')
-        return false;
-
-    mnt.subvolume = ++ptr;
-    ptr = parseMangledPath(ptr);
-    if (!ptr)
-        return false;
-
-    // unset a subvolume of "/" -- it's not a *sub* volume
-    if (mnt.subvolume + 1 == ptr)
-        *mnt.subvolume = '\0';
-
-    mnt.mnt_dir = ++ptr;
-    ptr = parseMangledPath(ptr);
-    if (!ptr)
-        return false;
-
-    mnt.mnt_opts = ++ptr;
-    ptr = strchr(ptr, ' ');
-    if (!ptr)
-        return false;
-
-    // we don't parse the flags, so just find the separator
-    if (char *const dashed = strstr(ptr, " - ")) {
-        *ptr = '\0';
-        ptr = dashed + strlen(" - ") - 1;
-    } else {
-        return false;
-    }
-
-    mnt.mnt_type = ++ptr;
-    ptr = strchr(ptr, ' ');
-    if (!ptr)
-        return false;
-    *ptr = '\0';
-
-    mnt.mnt_fsname = ++ptr;
-    ptr = parseMangledPath(ptr);
-    if (!ptr)
-        return false;
-
-    mnt.superopts = ++ptr;
-    ptr += strcspn(ptr, " \n");
-    *ptr = '\0';
-
-    return true;
+	return false;
+//    mnt.subvolume = nullptr;
+//    mnt.superopts = nullptr;
+//    if (!usingMountinfo)
+//        return ::getmntent_r(fp, &mnt, buffer.data(), buffer.size()) != nullptr;
+//
+//    // Helper function to parse paths that the kernel inserts escape sequences
+//    // for. The unescaped string is left at \a src and is properly
+//    // NUL-terminated. Returns a pointer to the delimiter that terminated the
+//    // path, or nullptr if it failed.
+//    auto parseMangledPath = [](char *src) {
+//        // The kernel escapes with octal the following characters:
+//        //  space ' ', tab '\t', backslask '\\', and newline '\n'
+//        char *dst = src;
+//        while (*src) {
+//            switch (*src) {
+//            case ' ':
+//                // Unescaped space: end of the field.
+//                *dst = '\0';
+//                return src;
+//
+//            default:
+//                *dst++ = *src++;
+//                break;
+//
+//            case '\\':
+//                // It always uses exactly three octal characters.
+//                ++src;
+//                char c = (*src++ - '0') << 6;
+//                c |= (*src++ - '0') << 3;
+//                c |= (*src++ - '0');
+//                *dst++ = c;
+//                break;
+//            }
+//        }
+//
+//        // Found a NUL before the end of the field.
+//        src = nullptr;
+//        return src;
+//    };
+//
+//    char *ptr = buffer.data();
+//    if (fgets(ptr, buffer.size(), fp) == nullptr)
+//        return false;
+//
+//    size_t len = strlen(ptr);
+//    if (len == 0)
+//        return false;
+//    while (Q_UNLIKELY(ptr[len - 1] != '\n' && !feof(fp))) {
+//        // buffer wasn't large enough. Enlarge and try again.
+//        // (we're readidng from the kernel, so OOM is unlikely)
+//        buffer.resize((buffer.size() + 4096) & ~4095);
+//        ptr = buffer.data();
+//        if (fgets(ptr + len, buffer.size() - len, fp) == nullptr)
+//            return false;
+//
+//        len += strlen(ptr + len);
+//        Q_ASSERT(len < size_t(buffer.size()));
+//    }
+//    ptr[len - 1] = '\0';
+//    const char *const stop = ptr + len - 1;
+//
+//    // parse the line
+//    mnt.mnt_freq = 0;
+//    mnt.mnt_passno = 0;
+//
+//    auto r = qstrntoll(ptr, stop - ptr, 10);
+//    if (!r.ok())
+//        return false;
+//    mnt.mount_id = r.result;
+//
+//    ptr += r.used;
+//    r = qstrntoll(ptr, stop - ptr, 10);
+//    if (!r.ok())
+//        return false;
+//    // parent_id = r.result; // member currently not in use
+//
+//    ptr += r.used;
+//    r = qstrntoll(ptr, stop - ptr, 10);
+//    if (!r.ok())
+//        return false;
+//    ptr += r.used;
+//    if (*ptr != ':')
+//        return false;
+//    int rdevmajor = r.result;
+//    ++ptr; // Skip over the ':'
+//    r = qstrntoll(ptr, stop - ptr, 10);
+//    if (!r.ok())
+//        return false;
+//    mnt.rdev = makedev(rdevmajor, r.result);
+//
+//    ptr += r.used;
+//    if (*ptr != ' ')
+//        return false;
+//
+//    mnt.subvolume = ++ptr;
+//    ptr = parseMangledPath(ptr);
+//    if (!ptr)
+//        return false;
+//
+//    // unset a subvolume of "/" -- it's not a *sub* volume
+//    if (mnt.subvolume + 1 == ptr)
+//        *mnt.subvolume = '\0';
+//
+//    mnt.mnt_dir = ++ptr;
+//    ptr = parseMangledPath(ptr);
+//    if (!ptr)
+//        return false;
+//
+//    mnt.mnt_opts = ++ptr;
+//    ptr = strchr(ptr, ' ');
+//    if (!ptr)
+//        return false;
+//
+//    // we don't parse the flags, so just find the separator
+//    if (char *const dashed = strstr(ptr, " - ")) {
+//        *ptr = '\0';
+//        ptr = dashed + strlen(" - ") - 1;
+//    } else {
+//        return false;
+//    }
+//
+//    mnt.mnt_type = ++ptr;
+//    ptr = strchr(ptr, ' ');
+//    if (!ptr)
+//        return false;
+//    *ptr = '\0';
+//
+//    mnt.mnt_fsname = ++ptr;
+//    ptr = parseMangledPath(ptr);
+//    if (!ptr)
+//        return false;
+//
+//    mnt.superopts = ++ptr;
+//    ptr += strcspn(ptr, " \n");
+//    *ptr = '\0';
+//
+//    return true;
 }
 
 inline QString QStorageIterator::rootPath() const
 {
-    return QFile::decodeName(mnt.mnt_dir);
+    return QString(); // QFile::decodeName(mnt.mnt_dir);
 }
 
 inline QByteArray QStorageIterator::fileSystemType() const
 {
-    return QByteArray(mnt.mnt_type);
+    return QByteArray(); //mnt.mnt_type);
 }
 
 inline QByteArray QStorageIterator::device() const
 {
-#ifdef Q_OS_LINUX
-    // check that the device exists
-    if (mnt.mnt_fsname[0] == '/' && access(mnt.mnt_fsname, F_OK) != 0) {
-        // It doesn't, so let's try to resolve the dev_t from /dev/block.
-        // Note how strlen("4294967295") == digits10 + 1, so we need to add 1
-        // for each number, plus the ':'.
-        char buf[sizeof("/dev/block/") + 2 * std::numeric_limits<unsigned>::digits10 + 3];
-        QByteArray dev(PATH_MAX, Qt::Uninitialized);
-        char *devdata = dev.data();
-
-        snprintf(buf, sizeof(buf), "/dev/block/%u:%u", major(mnt.rdev), minor(mnt.rdev));
-        if (realpath(buf, devdata)) {
-            dev.truncate(strlen(devdata));
-            return dev;
-        }
-    }
-#endif
-    return QByteArray(mnt.mnt_fsname);
+//#ifdef Q_OS_LINUX
+//    // check that the device exists
+//    if (mnt.mnt_fsname[0] == '/' && access(mnt.mnt_fsname, F_OK) != 0) {
+//        // It doesn't, so let's try to resolve the dev_t from /dev/block.
+//        // Note how strlen("4294967295") == digits10 + 1, so we need to add 1
+//        // for each number, plus the ':'.
+//        char buf[sizeof("/dev/block/") + 2 * std::numeric_limits<unsigned>::digits10 + 3];
+//        QByteArray dev(PATH_MAX, Qt::Uninitialized);
+//        char *devdata = dev.data();
+//
+//        snprintf(buf, sizeof(buf), "/dev/block/%u:%u", major(mnt.rdev), minor(mnt.rdev));
+//        if (realpath(buf, devdata)) {
+//            dev.truncate(strlen(devdata));
+//            return dev;
+//        }
+//    }
+//#endif
+//    return QByteArray(mnt.mnt_fsname);
+	QByteArray();
 }
 
 inline QByteArray QStorageIterator::options() const
 {
-    // Merge the two options, starting with the superblock options and letting
-    // the per-mount options override.
-    const char *superopts = mnt.superopts;
-
-    // Both mnt_opts and superopts start with "ro" or "rw", so we can skip the
-    // superblock's field (see show_mountinfo() in fs/proc_namespace.c).
-    if (superopts && superopts[0] == 'r') {
-        if (superopts[2] == '\0')       // no other superopts besides "ro" / "rw"?
-            superopts = nullptr;
-        else if (superopts[2] == ',')
-            superopts += 3;
-    }
-
-    if (superopts)
-        return QByteArray(superopts) + ',' + mnt.mnt_opts;
-    return QByteArray(mnt.mnt_opts);
+//    // Merge the two options, starting with the superblock options and letting
+//    // the per-mount options override.
+//    const char *superopts = mnt.superopts;
+//
+//    // Both mnt_opts and superopts start with "ro" or "rw", so we can skip the
+//    // superblock's field (see show_mountinfo() in fs/proc_namespace.c).
+//    if (superopts && superopts[0] == 'r') {
+//        if (superopts[2] == '\0')       // no other superopts besides "ro" / "rw"?
+//            superopts = nullptr;
+//        else if (superopts[2] == ',')
+//            superopts += 3;
+//    }
+//
+//    if (superopts)
+//        return QByteArray(superopts) + ',' + mnt.mnt_opts;
+//    return QByteArray(mnt.mnt_opts);
+	return QByteArray();
 }
 
 inline QByteArray QStorageIterator::subvolume() const
 {
-    return QByteArray(mnt.subvolume);
+    //return QByteArray(mnt.subvolume);
+    return QByteArray();
 }
 #elif defined(Q_OS_HAIKU)
 inline QStorageIterator::QStorageIterator()
@@ -809,23 +815,23 @@ void QStorageInfoPrivate::retrieveVolumeInfo()
         valid = true;
         ready = true;
 
-#if defined(Q_OS_INTEGRITY) || (defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD)) || defined(Q_OS_RTEMS)
-        bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
-        bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
-        bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
-#else
-        bytesTotal = statfs_buf.f_blocks * statfs_buf.f_frsize;
-        bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
-        bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
-#endif
-        blockSize = statfs_buf.f_bsize;
-#if defined(Q_OS_ANDROID) || defined(Q_OS_BSD4) || defined(Q_OS_INTEGRITY) || defined(Q_OS_RTEMS)
-#if defined(_STATFS_F_FLAGS)
-        readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
-#endif
-#else
-        readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
-#endif
+//#if defined(Q_OS_INTEGRITY) || (defined(Q_OS_BSD4) && !defined(Q_OS_NETBSD)) || defined(Q_OS_RTEMS)
+//        bytesTotal = statfs_buf.f_blocks * statfs_buf.f_bsize;
+//        bytesFree = statfs_buf.f_bfree * statfs_buf.f_bsize;
+//        bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_bsize;
+//#else
+//        bytesTotal = statfs_buf.f_blocks * statfs_buf.f_frsize;
+//        bytesFree = statfs_buf.f_bfree * statfs_buf.f_frsize;
+//        bytesAvailable = statfs_buf.f_bavail * statfs_buf.f_frsize;
+//#endif
+//        blockSize = statfs_buf.f_bsize;
+//#if defined(Q_OS_ANDROID) || defined(Q_OS_BSD4) || defined(Q_OS_INTEGRITY) || defined(Q_OS_RTEMS)
+//#if defined(_STATFS_F_FLAGS)
+//        readOnly = (statfs_buf.f_flags & ST_RDONLY) != 0;
+//#endif
+//#else
+//        readOnly = (statfs_buf.f_flag & ST_RDONLY) != 0;
+//#endif
     }
 }
 

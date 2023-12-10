@@ -11,7 +11,7 @@
 #include <private/qoperatingsystemversion_p.h>
 
 #ifdef Q_OS_UNIX
-#  include <sys/utsname.h>
+//#  include <sys/utsname.h>
 #  include <private/qcore_unix_p.h>
 #endif
 
@@ -541,82 +541,83 @@ QString QSysInfo::buildCpuArchitecture()
 */
 QString QSysInfo::currentCpuArchitecture()
 {
-#if defined(Q_OS_WIN)
-    // We don't need to catch all the CPU architectures in this function;
-    // only those where the host CPU might be different than the build target
-    // (usually, 64-bit platforms).
-    SYSTEM_INFO info;
-    GetNativeSystemInfo(&info);
-    switch (info.wProcessorArchitecture) {
-#  ifdef PROCESSOR_ARCHITECTURE_AMD64
-    case PROCESSOR_ARCHITECTURE_AMD64:
-        return QStringLiteral("x86_64");
-#  endif
-#  ifdef PROCESSOR_ARCHITECTURE_IA32_ON_WIN64
-    case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64:
-#  endif
-    case PROCESSOR_ARCHITECTURE_IA64:
-        return QStringLiteral("ia64");
-    }
-#elif defined(Q_OS_DARWIN) && !defined(Q_OS_MACOS)
-    // iOS-based OSes do not return the architecture on uname(2)'s result.
-    return buildCpuArchitecture();
-#elif defined(Q_OS_UNIX)
-    long ret = -1;
-    struct utsname u;
-
-#  if defined(Q_OS_SOLARIS)
-    // We need a special call for Solaris because uname(2) on x86 returns "i86pc" for
-    // both 32- and 64-bit CPUs. Reference:
-    // http://docs.oracle.com/cd/E18752_01/html/816-5167/sysinfo-2.html#REFMAN2sysinfo-2
-    // http://fxr.watson.org/fxr/source/common/syscall/systeminfo.c?v=OPENSOLARIS
-    // http://fxr.watson.org/fxr/source/common/conf/param.c?v=OPENSOLARIS;im=10#L530
-    if (ret == -1)
-        ret = sysinfo(SI_ARCHITECTURE_64, u.machine, sizeof u.machine);
-#  endif
-
-    if (ret == -1)
-        ret = uname(&u);
-
-    // we could use detectUnixVersion() above, but we only need a field no other function does
-    if (ret != -1) {
-        // the use of QT_BUILD_INTERNAL here is simply to ensure all branches build
-        // as we don't often build on some of the less common platforms
-#  if defined(Q_PROCESSOR_ARM) || defined(QT_BUILD_INTERNAL)
-        if (strcmp(u.machine, "aarch64") == 0)
-            return QStringLiteral("arm64");
-        if (strncmp(u.machine, "armv", 4) == 0)
-            return QStringLiteral("arm");
-#  endif
-#  if defined(Q_PROCESSOR_POWER) || defined(QT_BUILD_INTERNAL)
-        // harmonize "powerpc" and "ppc" to "power"
-        if (strncmp(u.machine, "ppc", 3) == 0)
-            return "power"_L1 + QLatin1StringView(u.machine + 3);
-        if (strncmp(u.machine, "powerpc", 7) == 0)
-            return "power"_L1 + QLatin1StringView(u.machine + 7);
-        if (strcmp(u.machine, "Power Macintosh") == 0)
-            return "power"_L1;
-#  endif
-#  if defined(Q_PROCESSOR_SPARC) || defined(QT_BUILD_INTERNAL)
-        // Solaris sysinfo(2) (above) uses "sparcv9", but uname -m says "sun4u";
-        // Linux says "sparc64"
-        if (strcmp(u.machine, "sun4u") == 0 || strcmp(u.machine, "sparc64") == 0)
-            return QStringLiteral("sparcv9");
-        if (strcmp(u.machine, "sparc32") == 0)
-            return QStringLiteral("sparc");
-#  endif
-#  if defined(Q_PROCESSOR_X86) || defined(QT_BUILD_INTERNAL)
-        // harmonize all "i?86" to "i386"
-        if (strlen(u.machine) == 4 && u.machine[0] == 'i'
-                && u.machine[2] == '8' && u.machine[3] == '6')
-            return QStringLiteral("i386");
-        if (strcmp(u.machine, "amd64") == 0) // Solaris
-            return QStringLiteral("x86_64");
-#  endif
-        return QString::fromLatin1(u.machine);
-    }
-#endif
-    return buildCpuArchitecture();
+	return QStringLiteral("x86_64");
+//#if defined(Q_OS_WIN)
+//    // We don't need to catch all the CPU architectures in this function;
+//    // only those where the host CPU might be different than the build target
+//    // (usually, 64-bit platforms).
+//    SYSTEM_INFO info;
+//    GetNativeSystemInfo(&info);
+//    switch (info.wProcessorArchitecture) {
+//#  ifdef PROCESSOR_ARCHITECTURE_AMD64
+//    case PROCESSOR_ARCHITECTURE_AMD64:
+//        return QStringLiteral("x86_64");
+//#  endif
+//#  ifdef PROCESSOR_ARCHITECTURE_IA32_ON_WIN64
+//    case PROCESSOR_ARCHITECTURE_IA32_ON_WIN64:
+//#  endif
+//    case PROCESSOR_ARCHITECTURE_IA64:
+//        return QStringLiteral("ia64");
+//    }
+//#elif defined(Q_OS_DARWIN) && !defined(Q_OS_MACOS)
+//    // iOS-based OSes do not return the architecture on uname(2)'s result.
+//    return buildCpuArchitecture();
+//#elif defined(Q_OS_UNIX)
+//    long ret = -1;
+//    struct utsname u;
+//
+//#  if defined(Q_OS_SOLARIS)
+//    // We need a special call for Solaris because uname(2) on x86 returns "i86pc" for
+//    // both 32- and 64-bit CPUs. Reference:
+//    // http://docs.oracle.com/cd/E18752_01/html/816-5167/sysinfo-2.html#REFMAN2sysinfo-2
+//    // http://fxr.watson.org/fxr/source/common/syscall/systeminfo.c?v=OPENSOLARIS
+//    // http://fxr.watson.org/fxr/source/common/conf/param.c?v=OPENSOLARIS;im=10#L530
+//    if (ret == -1)
+//        ret = sysinfo(SI_ARCHITECTURE_64, u.machine, sizeof u.machine);
+//#  endif
+//
+//    if (ret == -1)
+//        ret = uname(&u);
+//
+//    // we could use detectUnixVersion() above, but we only need a field no other function does
+//    if (ret != -1) {
+//        // the use of QT_BUILD_INTERNAL here is simply to ensure all branches build
+//        // as we don't often build on some of the less common platforms
+//#  if defined(Q_PROCESSOR_ARM) || defined(QT_BUILD_INTERNAL)
+//        if (strcmp(u.machine, "aarch64") == 0)
+//            return QStringLiteral("arm64");
+//        if (strncmp(u.machine, "armv", 4) == 0)
+//            return QStringLiteral("arm");
+//#  endif
+//#  if defined(Q_PROCESSOR_POWER) || defined(QT_BUILD_INTERNAL)
+//        // harmonize "powerpc" and "ppc" to "power"
+//        if (strncmp(u.machine, "ppc", 3) == 0)
+//            return "power"_L1 + QLatin1StringView(u.machine + 3);
+//        if (strncmp(u.machine, "powerpc", 7) == 0)
+//            return "power"_L1 + QLatin1StringView(u.machine + 7);
+//        if (strcmp(u.machine, "Power Macintosh") == 0)
+//            return "power"_L1;
+//#  endif
+//#  if defined(Q_PROCESSOR_SPARC) || defined(QT_BUILD_INTERNAL)
+//        // Solaris sysinfo(2) (above) uses "sparcv9", but uname -m says "sun4u";
+//        // Linux says "sparc64"
+//        if (strcmp(u.machine, "sun4u") == 0 || strcmp(u.machine, "sparc64") == 0)
+//            return QStringLiteral("sparcv9");
+//        if (strcmp(u.machine, "sparc32") == 0)
+//            return QStringLiteral("sparc");
+//#  endif
+//#  if defined(Q_PROCESSOR_X86) || defined(QT_BUILD_INTERNAL)
+//        // harmonize all "i?86" to "i386"
+//        if (strlen(u.machine) == 4 && u.machine[0] == 'i'
+//                && u.machine[2] == '8' && u.machine[3] == '6')
+//            return QStringLiteral("i386");
+//        if (strcmp(u.machine, "amd64") == 0) // Solaris
+//            return QStringLiteral("x86_64");
+//#  endif
+//        return QString::fromLatin1(u.machine);
+//    }
+//#endif
+//    return buildCpuArchitecture();
 }
 
 /*!
@@ -692,13 +693,13 @@ static QString unknownText()
 */
 QString QSysInfo::kernelType()
 {
-#if defined(Q_OS_WIN)
-    return QStringLiteral("winnt");
-#elif defined(Q_OS_UNIX)
-    struct utsname u;
-    if (uname(&u) == 0)
-        return QString::fromLatin1(u.sysname).toLower();
-#endif
+//#if defined(Q_OS_WIN)
+//    return QStringLiteral("winnt");
+//#elif defined(Q_OS_UNIX)
+//    struct utsname u;
+//    if (uname(&u) == 0)
+//        return QString::fromLatin1(u.sysname).toLower();
+//#endif
     return unknownText();
 }
 
@@ -717,16 +718,17 @@ QString QSysInfo::kernelType()
 */
 QString QSysInfo::kernelVersion()
 {
-#ifdef Q_OS_WIN
-    const auto osver = QOperatingSystemVersion::current();
-    return QString::asprintf("%d.%d.%d",
-                             osver.majorVersion(), osver.minorVersion(), osver.microVersion());
-#else
-    struct utsname u;
-    if (uname(&u) == 0)
-        return QString::fromLatin1(u.release);
-    return QString();
-#endif
+//#ifdef Q_OS_WIN
+//    const auto osver = QOperatingSystemVersion::current();
+//    return QString::asprintf("%d.%d.%d",
+//                             osver.majorVersion(), osver.minorVersion(), osver.microVersion());
+//#else
+//    struct utsname u;
+//    if (uname(&u) == 0)
+//        return QString::fromLatin1(u.release);
+//    return QString();
+//#endif
+	return QString();
 }
 
 
@@ -873,37 +875,37 @@ QString QSysInfo::productVersion()
 */
 QString QSysInfo::prettyProductName()
 {
-#if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
-    const auto version = QOperatingSystemVersion::current();
-    const int majorVersion = version.majorVersion();
-    const QString versionString = QString::asprintf("%d.%d", majorVersion, version.minorVersion());
-    QString result = version.name() + u' ';
-    const char *name = osVer_helper(version);
-    if (!name)
-        return result + versionString;
-    result += QLatin1StringView(name);
-#  if !defined(Q_OS_WIN)
-    return result + " ("_L1 + versionString + u')';
-#  else
-    // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
-    const auto displayVersion = windowsDisplayVersion();
-    if (!displayVersion.isEmpty())
-        result += " Version "_L1 + displayVersion;
-    return result;
-#  endif // Windows
-#elif defined(Q_OS_HAIKU)
-    return "Haiku "_L1 + productVersion();
-#elif defined(Q_OS_UNIX)
-#  ifdef USE_ETC_OS_RELEASE
-    QUnixOSVersion unixOsVersion;
-    findUnixOsVersion(unixOsVersion);
-    if (!unixOsVersion.prettyName.isEmpty())
-        return unixOsVersion.prettyName;
-#  endif
-    struct utsname u;
-    if (uname(&u) == 0)
-        return QString::fromLatin1(u.sysname) + u' ' + QString::fromLatin1(u.release);
-#endif
+//#if defined(Q_OS_ANDROID) || defined(Q_OS_DARWIN) || defined(Q_OS_WIN)
+//    const auto version = QOperatingSystemVersion::current();
+//    const int majorVersion = version.majorVersion();
+//    const QString versionString = QString::asprintf("%d.%d", majorVersion, version.minorVersion());
+//    QString result = version.name() + u' ';
+//    const char *name = osVer_helper(version);
+//    if (!name)
+//        return result + versionString;
+//    result += QLatin1StringView(name);
+//#  if !defined(Q_OS_WIN)
+//    return result + " ("_L1 + versionString + u')';
+//#  else
+//    // (resembling winver.exe): Windows 10 "Windows 10 Version 1809"
+//    const auto displayVersion = windowsDisplayVersion();
+//    if (!displayVersion.isEmpty())
+//        result += " Version "_L1 + displayVersion;
+//    return result;
+//#  endif // Windows
+//#elif defined(Q_OS_HAIKU)
+//    return "Haiku "_L1 + productVersion();
+//#elif defined(Q_OS_UNIX)
+//#  ifdef USE_ETC_OS_RELEASE
+//    QUnixOSVersion unixOsVersion;
+//    findUnixOsVersion(unixOsVersion);
+//    if (!unixOsVersion.prettyName.isEmpty())
+//        return unixOsVersion.prettyName;
+//#  endif
+//    struct utsname u;
+//    if (uname(&u) == 0)
+//        return QString::fromLatin1(u.sysname) + u' ' + QString::fromLatin1(u.release);
+//#endif
     return unknownText();
 }
 
@@ -925,39 +927,39 @@ QString QSysInfo::prettyProductName()
 */
 QString QSysInfo::machineHostName()
 {
-    // the hostname can change, so we can't cache it
-#if defined(Q_OS_LINUX)
-    // gethostname(3) on Linux just calls uname(2), so do it ourselves
-    // and avoid a memcpy
-    struct utsname u;
-    if (uname(&u) == 0)
-        return QString::fromLocal8Bit(u.nodename);
+//    // the hostname can change, so we can't cache it
+//#if defined(Q_OS_LINUX)
+//    // gethostname(3) on Linux just calls uname(2), so do it ourselves
+//    // and avoid a memcpy
+//    struct utsname u;
+//    if (uname(&u) == 0)
+//        return QString::fromLocal8Bit(u.nodename);
     return QString();
-#else
-#  ifdef Q_OS_WIN
-    // Important: QtNetwork depends on machineHostName() initializing ws2_32.dll
-    winsockInit();
-    QString hostName;
-    hostName.resize(512);
-    unsigned long len = hostName.size();
-    BOOL res = GetComputerNameEx(ComputerNameDnsHostname,
-            reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
-    if (!res && len > 512) {
-        hostName.resize(len - 1);
-        GetComputerNameEx(ComputerNameDnsHostname,
-                reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
-    }
-    hostName.truncate(len);
-    return hostName;
-#  else // !Q_OS_WIN
-
-    char hostName[512];
-    if (gethostname(hostName, sizeof(hostName)) == -1)
-        return QString();
-    hostName[sizeof(hostName) - 1] = '\0';
-    return QString::fromLocal8Bit(hostName);
-#  endif
-#endif
+//#else
+//#  ifdef Q_OS_WIN
+//    // Important: QtNetwork depends on machineHostName() initializing ws2_32.dll
+//    winsockInit();
+//    QString hostName;
+//    hostName.resize(512);
+//    unsigned long len = hostName.size();
+//    BOOL res = GetComputerNameEx(ComputerNameDnsHostname,
+//            reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
+//    if (!res && len > 512) {
+//        hostName.resize(len - 1);
+//        GetComputerNameEx(ComputerNameDnsHostname,
+//                reinterpret_cast<wchar_t *>(const_cast<quint16 *>(hostName.utf16())), &len);
+//    }
+//    hostName.truncate(len);
+//    return hostName;
+//#  else // !Q_OS_WIN
+//
+//    char hostName[512];
+//    if (gethostname(hostName, sizeof(hostName)) == -1)
+//        return QString();
+//    hostName[sizeof(hostName) - 1] = '\0';
+//    return QString::fromLocal8Bit(hostName);
+//#  endif
+//#endif
 }
 #endif // QT_BOOTSTRAPPED
 

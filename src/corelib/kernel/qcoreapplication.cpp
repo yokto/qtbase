@@ -76,7 +76,7 @@
 #ifdef Q_OS_UNIX
 #  include <locale.h>
 #  ifndef Q_OS_INTEGRITY
-#    include <langinfo.h>
+//#    include <langinfo.h>
 #  endif
 #  include <unistd.h>
 #  include <sys/types.h>
@@ -448,10 +448,10 @@ QCoreApplicationPrivate::QCoreApplicationPrivate(int &aargc, char **aargv)
 #ifndef QT_NO_QOBJECT
     QCoreApplicationPrivate::is_app_closing = false;
 
-#  if defined(Q_OS_UNIX)
-    if (Q_UNLIKELY(!setuidAllowed && (geteuid() != getuid())))
-        qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
-#  endif // Q_OS_UNIX
+//#  if defined(Q_OS_UNIX)
+//    if (Q_UNLIKELY(!setuidAllowed && (geteuid() != getuid())))
+//        qFatal("FATAL: The application binary appears to be running setuid, this is a security hole.");
+//#  endif // Q_OS_UNIX
 
     QThread *cur = QThread::currentThread(); // note: this may end up setting theMainThread!
     if (cur != theMainThread.loadAcquire())
@@ -626,7 +626,7 @@ void QCoreApplicationPrivate::initLocale()
     // FIXME: Shouldn't we still setlocale("UTF-8")?
 #  else
     // std::string's SSO usually saves this the need to allocate:
-    const std::string oldEncoding = nl_langinfo(CODESET);
+    const std::string oldEncoding = "UTF-8";
     if (!Q_LIKELY(qstricmp(oldEncoding.data(), "UTF-8") == 0
                   || qstricmp(oldEncoding.data(), "utf8") == 0)) {
         const QByteArray oldLocale = setlocale(LC_ALL, nullptr);

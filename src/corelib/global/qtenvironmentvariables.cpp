@@ -265,33 +265,38 @@ bool qEnvironmentVariableIsSet(const char *varName) noexcept
 
     \sa qgetenv(), qEnvironmentVariable()
 */
+#include <stdio.h>
 bool qputenv(const char *varName, QByteArrayView raw)
 {
-    auto protect = [](const char *str) { return str ? str : ""; };
-
-    std::string value{protect(raw.data()), size_t(raw.size())}; // NUL-terminates w/SSO
-
-#if defined(Q_CC_MSVC)
-    const auto locker = qt_scoped_lock(environmentMutex);
-    return _putenv_s(varName, value.data()) == 0;
-#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
-    // POSIX.1-2001 has setenv
-    const auto locker = qt_scoped_lock(environmentMutex);
-    return setenv(varName, value.data(), true) == 0;
-#else
-    std::string buffer;
-    buffer += protect(varName);
-    buffer += '=';
-    buffer += value;
-    char *envVar = qstrdup(buffer.data());
-    int result = [&] {
-        const auto locker = qt_scoped_lock(environmentMutex);
-        return putenv(envVar);
-    }();
-    if (result != 0) // error. we have to delete the string.
-        delete[] envVar;
-    return result == 0;
-#endif
+      fprintf(stderr, "putenv %s\n", varName);
+      fflush(stderr);
+      __builtin_trap();
+    
+//    auto protect = [](const char *str) { return str ? str : ""; };
+//
+//    std::string value{protect(raw.data()), size_t(raw.size())}; // NUL-terminates w/SSO
+//
+//#if defined(Q_CC_MSVC)
+//    const auto locker = qt_scoped_lock(environmentMutex);
+//    return _putenv_s(varName, value.data()) == 0;
+//#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_HAIKU)
+//    // POSIX.1-2001 has setenv
+//    const auto locker = qt_scoped_lock(environmentMutex);
+//    return setenv(varName, value.data(), true) == 0;
+//#else
+//    std::string buffer;
+//    buffer += protect(varName);
+//    buffer += '=';
+//    buffer += value;
+//    char *envVar = qstrdup(buffer.data());
+//    int result = [&] {
+//        const auto locker = qt_scoped_lock(environmentMutex);
+//        return putenv(envVar);
+//    }();
+//    if (result != 0) // error. we have to delete the string.
+//        delete[] envVar;
+//    return result == 0;
+//#endif
 }
 
 /*!
@@ -307,28 +312,31 @@ bool qputenv(const char *varName, QByteArrayView raw)
 */
 bool qunsetenv(const char *varName)
 {
-#if defined(Q_CC_MSVC)
-    const auto locker = qt_scoped_lock(environmentMutex);
-    return _putenv_s(varName, "") == 0;
-#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)
-    // POSIX.1-2001, BSD and Haiku have unsetenv
-    const auto locker = qt_scoped_lock(environmentMutex);
-    return unsetenv(varName) == 0;
-#elif defined(Q_CC_MINGW)
-    // On mingw, putenv("var=") removes "var" from the environment
-    QByteArray buffer(varName);
-    buffer += '=';
-    const auto locker = qt_scoped_lock(environmentMutex);
-    return putenv(buffer.constData()) == 0;
-#else
-    // Fallback to putenv("var=") which will insert an empty var into the
-    // environment and leak it
-    QByteArray buffer(varName);
-    buffer += '=';
-    char *envVar = qstrdup(buffer.constData());
-    const auto locker = qt_scoped_lock(environmentMutex);
-    return putenv(envVar) == 0;
-#endif
+      fprintf(stderr, "putenv %s\n", varName);
+      fflush(stderr);
+      __builtin_trap();
+//#if defined(Q_CC_MSVC)
+//    const auto locker = qt_scoped_lock(environmentMutex);
+//    return _putenv_s(varName, "") == 0;
+//#elif (defined(_POSIX_VERSION) && (_POSIX_VERSION-0) >= 200112L) || defined(Q_OS_BSD4) || defined(Q_OS_HAIKU)
+//    // POSIX.1-2001, BSD and Haiku have unsetenv
+//    const auto locker = qt_scoped_lock(environmentMutex);
+//    return unsetenv(varName) == 0;
+//#elif defined(Q_CC_MINGW)
+//    // On mingw, putenv("var=") removes "var" from the environment
+//    QByteArray buffer(varName);
+//    buffer += '=';
+//    const auto locker = qt_scoped_lock(environmentMutex);
+//    return putenv(buffer.constData()) == 0;
+//#else
+//    // Fallback to putenv("var=") which will insert an empty var into the
+//    // environment and leak it
+//    QByteArray buffer(varName);
+//    buffer += '=';
+//    char *envVar = qstrdup(buffer.constData());
+//    const auto locker = qt_scoped_lock(environmentMutex);
+//    return putenv(envVar) == 0;
+//#endif
 }
 
 /* Various time-related APIs that need to consult system settings also need
@@ -340,11 +348,11 @@ bool qunsetenv(const char *varName)
 void qTzSet()
 {
     const auto locker = qt_scoped_lock(environmentMutex);
-#if defined(Q_OS_WIN)
-    _tzset();
-#else
-    tzset();
-#endif // Q_OS_WIN
+//#if defined(Q_OS_WIN)
+//    _tzset();
+//#else
+//    tzset();
+//#endif // Q_OS_WIN
 }
 
 /* Wrap mktime(), which is specified to behave as if it called tzset(), hence
@@ -402,24 +410,25 @@ bool qLocalTime(time_t utc, struct tm *local)
 */
 QString qTzName(int dstIndex)
 {
-    char name[512];
-    bool ok;
-#if defined(_UCRT)  // i.e., MSVC and MinGW-UCRT
-    size_t s = 0;
-    {
-        const auto locker = qt_scoped_lock(environmentMutex);
-        ok = _get_tzname(&s, name, 512, dstIndex) != 0;
-    }
-#else
-    {
-        const auto locker = qt_scoped_lock(environmentMutex);
-        const char *const src = tzname[dstIndex];
-        ok = src != nullptr;
-        if (ok)
-            memcpy(name, src, std::min(sizeof(name), strlen(src) + 1));
-    }
-#endif // Q_OS_WIN
-    return ok ? QString::fromLocal8Bit(name) : QString();
+	return QString();
+//    char name[512];
+//    bool ok;
+//#if defined(_UCRT)  // i.e., MSVC and MinGW-UCRT
+//    size_t s = 0;
+//    {
+//        const auto locker = qt_scoped_lock(environmentMutex);
+//        ok = _get_tzname(&s, name, 512, dstIndex) != 0;
+//    }
+//#else
+//    {
+//        const auto locker = qt_scoped_lock(environmentMutex);
+//        const char *const src = tzname[dstIndex];
+//        ok = src != nullptr;
+//        if (ok)
+//            memcpy(name, src, std::min(sizeof(name), strlen(src) + 1));
+//    }
+//#endif // Q_OS_WIN
+//    return ok ? QString::fromLocal8Bit(name) : QString();
 }
 
 QT_END_NAMESPACE

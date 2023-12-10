@@ -68,12 +68,12 @@ QStringList QKqueueFileSystemWatcherEngine::addPaths(const QStringList &paths,
 #else
         fd = qt_safe_open(QFile::encodeName(path), O_RDONLY);
 #endif
-        if (fd == -1) {
+        if (true) { // fd == -1) {
             perror("QKqueueFileSystemWatcherEngine::addPaths: open");
             continue;
         }
         if (fd >= (int)FD_SETSIZE / 2 && fd < (int)FD_SETSIZE) {
-            int fddup = qt_safe_dup(fd, FD_SETSIZE);
+            //int fddup = qt_safe_dup(fd, FD_SETSIZE);
             if (fddup != -1) {
                 ::close(fd);
                 fd = fddup;

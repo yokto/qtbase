@@ -1117,41 +1117,42 @@ void QFileDialog::selectUrl(const QUrl &url)
 #ifdef Q_OS_UNIX
 Q_AUTOTEST_EXPORT QString qt_tildeExpansion(const QString &path)
 {
-    if (!path.startsWith(u'~'))
-        return path;
-    int separatorPosition = path.indexOf(QDir::separator());
-    if (separatorPosition < 0)
-        separatorPosition = path.size();
-    if (separatorPosition == 1) {
-        return QDir::homePath() + QStringView{path}.mid(1);
-    } else {
-#if defined(Q_OS_VXWORKS) || defined(Q_OS_INTEGRITY)
-        const QString homePath = QDir::homePath();
-#else
-        const QByteArray userName = QStringView{path}.mid(1, separatorPosition - 1).toLocal8Bit();
-# if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_WASM)
-        passwd pw;
-        passwd *tmpPw;
-        char buf[200];
-        const int bufSize = sizeof(buf);
-        int err = 0;
-#  if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
-        tmpPw = getpwnam_r(userName.constData(), &pw, buf, bufSize);
-#  else
-        err = getpwnam_r(userName.constData(), &pw, buf, bufSize, &tmpPw);
-#  endif
-        if (err || !tmpPw)
-            return path;
-        const QString homePath = QString::fromLocal8Bit(pw.pw_dir);
-# else
-        passwd *pw = getpwnam(userName.constData());
-        if (!pw)
-            return path;
-        const QString homePath = QString::fromLocal8Bit(pw->pw_dir);
-# endif
-#endif
-        return homePath + QStringView{path}.mid(separatorPosition);
-    }
+	return path;
+//    if (!path.startsWith(u'~'))
+//        return path;
+//    int separatorPosition = path.indexOf(QDir::separator());
+//    if (separatorPosition < 0)
+//        separatorPosition = path.size();
+//    if (separatorPosition == 1) {
+//        return QDir::homePath() + QStringView{path}.mid(1);
+//    } else {
+//#if defined(Q_OS_VXWORKS) || defined(Q_OS_INTEGRITY)
+//        const QString homePath = QDir::homePath();
+//#else
+//        const QByteArray userName = QStringView{path}.mid(1, separatorPosition - 1).toLocal8Bit();
+//# if defined(_POSIX_THREAD_SAFE_FUNCTIONS) && !defined(Q_OS_OPENBSD) && !defined(Q_OS_WASM)
+//        passwd pw;
+//        passwd *tmpPw;
+//        char buf[200];
+//        const int bufSize = sizeof(buf);
+//        int err = 0;
+//#  if defined(Q_OS_SOLARIS) && (_POSIX_C_SOURCE - 0 < 199506L)
+//        tmpPw = getpwnam_r(userName.constData(), &pw, buf, bufSize);
+//#  else
+//        err = getpwnam_r(userName.constData(), &pw, buf, bufSize, &tmpPw);
+//#  endif
+//        if (err || !tmpPw)
+//            return path;
+//        const QString homePath = QString::fromLocal8Bit(pw.pw_dir);
+//# else
+//        passwd *pw = getpwnam(userName.constData());
+//        if (!pw)
+//            return path;
+//        const QString homePath = QString::fromLocal8Bit(pw->pw_dir);
+//# endif
+//#endif
+//        return homePath + QStringView{path}.mid(separatorPosition);
+//    }
 }
 #endif
 
@@ -1784,7 +1785,7 @@ QLineEdit *QFileDialogPrivate::lineEdit() const {
 long QFileDialogPrivate::maxNameLength(const QString &path)
 {
 #if defined(Q_OS_UNIX)
-    return ::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
+    return 4096; //::pathconf(QFile::encodeName(path).data(), _PC_NAME_MAX);
 #elif defined(Q_OS_WIN)
     DWORD maxLength;
     const QString drive = path.left(3);

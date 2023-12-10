@@ -32,7 +32,7 @@
 
 #if !defined (Q_OS_VXWORKS)
 # if !defined(Q_OS_HPUX) || defined(__ia64)
-#  include <sys/select.h>
+//#  include <sys/select.h>
 # endif
 #  include <sys/time.h>
 #else
@@ -188,16 +188,16 @@ inline void qt_ignore_sigpipe()
 {
     // Set to ignore SIGPIPE once only.
     Q_CONSTINIT static QBasicAtomicInt atom = Q_BASIC_ATOMIC_INITIALIZER(0);
-    if (!atom.loadRelaxed()) {
-        // More than one thread could turn off SIGPIPE at the same time
-        // But that's acceptable because they all would be doing the same
-        // action
-        struct sigaction noaction;
-        memset(&noaction, 0, sizeof(noaction));
-        noaction.sa_handler = SIG_IGN;
-        ::sigaction(SIGPIPE, &noaction, nullptr);
-        atom.storeRelaxed(1);
-    }
+//    if (!atom.loadRelaxed()) {
+//        // More than one thread could turn off SIGPIPE at the same time
+//        // But that's acceptable because they all would be doing the same
+//        // action
+//        struct sigaction noaction;
+//        memset(&noaction, 0, sizeof(noaction));
+//        noaction.sa_handler = SIG_IGN;
+//        ::sigaction(SIGPIPE, &noaction, nullptr);
+//        atom.storeRelaxed(1);
+//    }
 }
 
 #if defined(Q_PROCESSOR_X86_32) && defined(__GLIBC__)
@@ -229,77 +229,77 @@ static inline int qt_safe_open(const char *pathname, int flags, mode_t mode = 07
 #define QT_OPEN         qt_safe_open
 
 #ifndef Q_OS_VXWORKS // no POSIX pipes in VxWorks
-// don't call ::pipe
-// call qt_safe_pipe
-static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
-{
-    Q_ASSERT((flags & ~O_NONBLOCK) == 0);
-
-#ifdef QT_THREADSAFE_CLOEXEC
-    // use pipe2
-    flags |= O_CLOEXEC;
-    return ::pipe2(pipefd, flags); // pipe2 is documented not to return EINTR
-#else
-    int ret = ::pipe(pipefd);
-    if (ret == -1)
-        return -1;
-
-    ::fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
-    ::fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
-
-    // set non-block too?
-    if (flags & O_NONBLOCK) {
-        ::fcntl(pipefd[0], F_SETFL, ::fcntl(pipefd[0], F_GETFL) | O_NONBLOCK);
-        ::fcntl(pipefd[1], F_SETFL, ::fcntl(pipefd[1], F_GETFL) | O_NONBLOCK);
-    }
-
-    return 0;
-#endif
-}
+//// don't call ::pipe
+//// call qt_safe_pipe
+//static inline int qt_safe_pipe(int pipefd[2], int flags = 0)
+//{
+//    Q_ASSERT((flags & ~O_NONBLOCK) == 0);
+//
+//#ifdef QT_THREADSAFE_CLOEXEC
+//    // use pipe2
+//    flags |= O_CLOEXEC;
+//    return ::pipe2(pipefd, flags); // pipe2 is documented not to return EINTR
+//#else
+//    int ret = ::pipe(pipefd);
+//    if (ret == -1)
+//        return -1;
+//
+//    ::fcntl(pipefd[0], F_SETFD, FD_CLOEXEC);
+//    ::fcntl(pipefd[1], F_SETFD, FD_CLOEXEC);
+//
+//    // set non-block too?
+//    if (flags & O_NONBLOCK) {
+//        ::fcntl(pipefd[0], F_SETFL, ::fcntl(pipefd[0], F_GETFL) | O_NONBLOCK);
+//        ::fcntl(pipefd[1], F_SETFL, ::fcntl(pipefd[1], F_GETFL) | O_NONBLOCK);
+//    }
+//
+//    return 0;
+//#endif
+//}
 
 #endif // Q_OS_VXWORKS
 
-// don't call dup or fcntl(F_DUPFD)
-static inline int qt_safe_dup(int oldfd, int atleast = 0, int flags = FD_CLOEXEC)
-{
-    Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
+//// don't call dup or fcntl(F_DUPFD)
+//static inline int qt_safe_dup(int oldfd, int atleast = 0, int flags = FD_CLOEXEC)
+//{
+//    Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
+//
+//#ifdef F_DUPFD_CLOEXEC
+//    int cmd = F_DUPFD;
+//    if (flags & FD_CLOEXEC)
+//        cmd = F_DUPFD_CLOEXEC;
+//    return ::fcntl(oldfd, cmd, atleast);
+//#else
+//    // use F_DUPFD
+//    int ret = ::fcntl(oldfd, F_DUPFD, atleast);
+//
+//    if (flags && ret != -1)
+//        ::fcntl(ret, F_SETFD, flags);
+//    return ret;
+//#endif
+//}
 
-#ifdef F_DUPFD_CLOEXEC
-    int cmd = F_DUPFD;
-    if (flags & FD_CLOEXEC)
-        cmd = F_DUPFD_CLOEXEC;
-    return ::fcntl(oldfd, cmd, atleast);
-#else
-    // use F_DUPFD
-    int ret = ::fcntl(oldfd, F_DUPFD, atleast);
-
-    if (flags && ret != -1)
-        ::fcntl(ret, F_SETFD, flags);
-    return ret;
-#endif
-}
-
-// don't call dup2
-// call qt_safe_dup2
-static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
-{
-    Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
-
-    int ret;
-#ifdef QT_THREADSAFE_CLOEXEC
-    // use dup3
-    EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
-    return ret;
-#else
-    EINTR_LOOP(ret, ::dup2(oldfd, newfd));
-    if (ret == -1)
-        return -1;
-
-    if (flags)
-        ::fcntl(newfd, F_SETFD, flags);
-    return 0;
-#endif
-}
+//// don't call dup2
+//// call qt_safe_dup2
+//static inline int qt_safe_dup2(int oldfd, int newfd, int flags = FD_CLOEXEC)
+//{
+//    Q_ASSERT(flags == FD_CLOEXEC || flags == 0);
+//
+//    int ret;
+//#ifdef QT_THREADSAFE_CLOEXEC
+//    // use dup3
+//    EINTR_LOOP(ret, ::dup3(oldfd, newfd, flags ? O_CLOEXEC : 0));
+//    return ret;
+//#else
+//    EINTR_LOOP(ret, ::dup2(oldfd, newfd));
+//    if (ret == -1)
+//        return -1;
+//
+//    if (flags)
+//        ::fcntl(newfd, F_SETFD, flags);
+//    return 0;
+//#endif
+//}
 
 static inline qint64 qt_safe_read(int fd, void *data, qint64 maxlen)
 {

@@ -15,7 +15,7 @@
 #  include <QThread>
 #endif
 
-#include <sys/times.h>
+//#include <sys/times.h>
 
 using namespace std::chrono;
 

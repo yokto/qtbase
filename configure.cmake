@@ -572,7 +572,7 @@ qt_feature("largefile"
     LABEL "Large file support"
     CONDITION NOT ANDROID AND NOT INTEGRITY AND NOT rtems
 )
-qt_feature_definition("largefile" "QT_LARGEFILE_SUPPORT" VALUE "64")
+#qt_feature_definition("largefile" "QT_LARGEFILE_SUPPORT" VALUE "64")
 qt_feature_config("largefile" QMAKE_PRIVATE_CONFIG)
 qt_feature("testcocoon"
     LABEL "Testcocoon support"

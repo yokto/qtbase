@@ -279,7 +279,8 @@ static bool stderrHasConsoleAttached()
             return true;
         } else if (errno == ENOENT || errno == EPERM || errno == ENXIO) {
             // Fall back to isatty for some non-critical errors
-            return isatty(STDERR_FILENO);
+            //return isatty(STDERR_FILENO);
+	    return false;
         } else {
             return false;
         }

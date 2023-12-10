@@ -33,7 +33,7 @@
 #  include <zstd.h>
 #endif
 
-#if defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
+#if 0 // defined(Q_OS_UNIX) && !defined(Q_OS_INTEGRITY)
 #  define QT_USE_MMAP
 #  include <sys/mman.h>
 #endif

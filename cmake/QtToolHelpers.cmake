@@ -517,7 +517,7 @@ function(qt_check_if_tools_will_be_built)
         endif()
     endif()
 
-    set(QT_WILL_BUILD_TOOLS ${will_build_tools} CACHE INTERNAL "Are tools going to be built" FORCE)
+    set(QT_WILL_BUILD_TOOLS FALSE CACHE INTERNAL "Are tools going to be built" FORCE)
     set(QT_WILL_RENAME_TOOL_TARGETS ${need_target_rename} CACHE INTERNAL
         "Do tool targets need to be renamed" FORCE)
 endfunction()

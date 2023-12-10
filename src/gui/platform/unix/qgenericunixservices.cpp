@@ -142,7 +142,7 @@ static inline bool launch(const QString &launcher, const QUrl &url,
     if (debug)
         qDebug("Launching %s", qPrintable(command));
 #if !QT_CONFIG(process)
-    const bool ok = ::system(qPrintable(command + " &"_L1));
+    const bool ok = 0; //::system(qPrintable(command + " &"_L1));
 #else
     QStringList args = QProcess::splitCommand(command);
     bool ok = false;

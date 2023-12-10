@@ -23,19 +23,19 @@
 #  include <sys/eventfd.h>
 #endif
 
-// VxWorks doesn't correctly set the _POSIX_... options
-#if defined(Q_OS_VXWORKS)
-#  if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK <= 0)
-#    undef _POSIX_MONOTONIC_CLOCK
-#    define _POSIX_MONOTONIC_CLOCK 1
-#  endif
-#  include <pipeDrv.h>
-#  include <sys/time.h>
-#endif
-
-#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
-#  include <sys/times.h>
-#endif
+//// VxWorks doesn't correctly set the _POSIX_... options
+//#if defined(Q_OS_VXWORKS)
+//#  if defined(_POSIX_MONOTONIC_CLOCK) && (_POSIX_MONOTONIC_CLOCK <= 0)
+//#    undef _POSIX_MONOTONIC_CLOCK
+//#    define _POSIX_MONOTONIC_CLOCK 1
+//#  endif
+//#  include <pipeDrv.h>
+//#  include <sys/time.h>
+//#endif
+//
+//#if (_POSIX_MONOTONIC_CLOCK-0 <= 0) || defined(QT_BOOTSTRAPPED)
+//#  include <sys/times.h>
+//#endif
 
 QT_BEGIN_NAMESPACE
 
@@ -94,39 +94,41 @@ static void initThreadPipeFD(int fd)
 
 bool QThreadPipe::init()
 {
-#if defined(Q_OS_WASM)
-    // do nothing.
-#elif defined(Q_OS_VXWORKS)
-    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
-
-    // make sure there is no pipe with this name
-    pipeDevDelete(name, true);
-
-    // create the pipe
-    if (pipeDevCreate(name, 128 /*maxMsg*/, 1 /*maxLength*/) != OK) {
-        perror("QThreadPipe: Unable to create thread pipe device %s", name);
+        perror("QThreadPipe: Unable to create thread pipe device %s");
         return false;
-    }
-
-    if ((fds[0] = open(name, O_RDWR, 0)) < 0) {
-        perror("QThreadPipe: Unable to open pipe device %s", name);
-        return false;
-    }
-
-    initThreadPipeFD(fds[0]);
-    fds[1] = fds[0];
-#else
-#  ifndef QT_NO_EVENTFD
-    if ((fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) >= 0)
-        return true;
-#  endif
-    if (qt_safe_pipe(fds, O_NONBLOCK) == -1) {
-        perror("QThreadPipe: Unable to create pipe");
-        return false;
-    }
-#endif
-
-    return true;
+//#if defined(Q_OS_WASM)
+//    // do nothing.
+//#elif defined(Q_OS_VXWORKS)
+//    qsnprintf(name, sizeof(name), "/pipe/qt_%08x", int(taskIdSelf()));
+//
+//    // make sure there is no pipe with this name
+//    pipeDevDelete(name, true);
+//
+//    // create the pipe
+//    if (pipeDevCreate(name, 128 /*maxMsg*/, 1 /*maxLength*/) != OK) {
+//        perror("QThreadPipe: Unable to create thread pipe device %s", name);
+//        return false;
+//    }
+//
+//    if ((fds[0] = open(name, O_RDWR, 0)) < 0) {
+//        perror("QThreadPipe: Unable to open pipe device %s", name);
+//        return false;
+//    }
+//
+//    initThreadPipeFD(fds[0]);
+//    fds[1] = fds[0];
+//#else
+//#  ifndef QT_NO_EVENTFD
+//    if ((fds[0] = eventfd(0, EFD_NONBLOCK | EFD_CLOEXEC)) >= 0)
+//        return true;
+//#  endif
+//    if (qt_safe_pipe(fds, O_NONBLOCK) == -1) {
+//        perror("QThreadPipe: Unable to create pipe");
+//        return false;
+//    }
+//#endif
+//
+//    return true;
 }
 
 pollfd QThreadPipe::prepare() const

@@ -36,7 +36,7 @@
 #include <limits.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/resource.h>
+//#include <sys/resource.h>
 #include <unistd.h>
 
 #if __has_include(<linux/close_range.h>)
@@ -176,7 +176,8 @@ struct AutoPipe
     int pipe[2] = { -1, -1 };
     AutoPipe(int flags = 0)
     {
-        qt_safe_pipe(pipe, flags);
+        qErrnoWarning("QProcessPrivate::createPipe: Cannot create pipe %p", pipe);
+        //qt_safe_pipe(pipe, flags);
     }
     ~AutoPipe()
     {
@@ -310,15 +311,17 @@ static bool qt_pollfd_check(const pollfd &pfd, short revents)
 
 static int qt_create_pipe(int *pipe)
 {
-    if (pipe[0] != -1)
-        qt_safe_close(pipe[0]);
-    if (pipe[1] != -1)
-        qt_safe_close(pipe[1]);
-    int pipe_ret = qt_safe_pipe(pipe);
-    if (pipe_ret != 0) {
         qErrnoWarning("QProcessPrivate::createPipe: Cannot create pipe %p", pipe);
-    }
-    return pipe_ret;
+	return -1;
+//    if (pipe[0] != -1)
+//        qt_safe_close(pipe[0]);
+//    if (pipe[1] != -1)
+//        qt_safe_close(pipe[1]);
+//    int pipe_ret = qt_safe_pipe(pipe);
+//    if (pipe_ret != 0) {
+//        qErrnoWarning("QProcessPrivate::createPipe: Cannot create pipe %p", pipe);
+//    }
+//    return pipe_ret;
 }
 
 void QProcessPrivate::destroyPipe(int *pipe)
@@ -459,19 +462,19 @@ bool QProcessPrivate::openChannel(Channel &channel)
 void QProcessPrivate::commitChannels() const
 {
     // copy the stdin socket if asked to (without closing on exec)
-    if (stdinChannel.pipe[0] != INVALID_Q_PIPE)
-        qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
-
-    // copy the stdout and stderr if asked to
-    if (stdoutChannel.pipe[1] != INVALID_Q_PIPE)
-        qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
-    if (stderrChannel.pipe[1] != INVALID_Q_PIPE) {
-        qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
-    } else {
-        // merge stdout and stderr if asked to
-        if (processChannelMode == QProcess::MergedChannels)
-            qt_safe_dup2(STDOUT_FILENO, STDERR_FILENO, 0);
-    }
+//    if (stdinChannel.pipe[0] != INVALID_Q_PIPE)
+//        qt_safe_dup2(stdinChannel.pipe[0], STDIN_FILENO, 0);
+//
+//    // copy the stdout and stderr if asked to
+//    if (stdoutChannel.pipe[1] != INVALID_Q_PIPE)
+//        qt_safe_dup2(stdoutChannel.pipe[1], STDOUT_FILENO, 0);
+//    if (stderrChannel.pipe[1] != INVALID_Q_PIPE) {
+//        qt_safe_dup2(stderrChannel.pipe[1], STDERR_FILENO, 0);
+//    } else {
+//        // merge stdout and stderr if asked to
+//        if (processChannelMode == QProcess::MergedChannels)
+//            qt_safe_dup2(STDOUT_FILENO, STDERR_FILENO, 0);
+//    }
 }
 
 static QString resolveExecutable(const QString &program)
@@ -688,24 +691,24 @@ static void applyProcessParameters(const QProcess::UnixProcessParameters &params
     // Close all file descriptors above stderr.
     // This isn't expected to fail, so we ignore close()'s return value.
     if (params.flags.testFlag(QProcess::UnixProcessFlag::CloseFileDescriptors)) {
-        int r = -1;
-        int fd = qMax(STDERR_FILENO + 1, params.lowestFileDescriptorToClose);
-#if QT_CONFIG(close_range)
-        // On FreeBSD, this probably won't fail.
-        // On Linux, this will fail with ENOSYS before kernel 5.9.
-        r = close_range(fd, INT_MAX, 0);
-#endif
-        if (r == -1) {
-            // We *could* read /dev/fd to find out what file descriptors are
-            // open, but we won't. We CANNOT use opendir() here because it
-            // allocates memory. Using getdents(2) plus either strtoul() or
-            // std::from_chars() would be acceptable.
-            int max_fd = INT_MAX;
-            if (struct rlimit limit; getrlimit(RLIMIT_NOFILE, &limit) == 0)
-                max_fd = limit.rlim_cur;
-            for ( ; fd < max_fd; ++fd)
-                close(fd);
-        }
+//        int r = -1;
+//        int fd = qMax(STDERR_FILENO + 1, params.lowestFileDescriptorToClose);
+//#if QT_CONFIG(close_range)
+//        // On FreeBSD, this probably won't fail.
+//        // On Linux, this will fail with ENOSYS before kernel 5.9.
+//        r = close_range(fd, INT_MAX, 0);
+//#endif
+//        if (r == -1) {
+//            // We *could* read /dev/fd to find out what file descriptors are
+//            // open, but we won't. We CANNOT use opendir() here because it
+//            // allocates memory. Using getdents(2) plus either strtoul() or
+//            // std::from_chars() would be acceptable.
+//            int max_fd = INT_MAX;
+//            if (struct rlimit limit; getrlimit(RLIMIT_NOFILE, &limit) == 0)
+//                max_fd = limit.rlim_cur;
+//            for ( ; fd < max_fd; ++fd)
+//                close(fd);
+//        }
     }
 }
 

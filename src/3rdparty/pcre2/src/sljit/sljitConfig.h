@@ -80,7 +80,7 @@ extern "C" {
 /* Single threaded application. Does not require any locks. */
 #ifndef SLJIT_SINGLE_THREADED
 /* Disabled by default. */
-#define SLJIT_SINGLE_THREADED 0
+#define SLJIT_SINGLE_THREADED 1
 #endif
 
 /* --------------------------------------------------------------------- */

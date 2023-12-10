@@ -178,11 +178,11 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
 
     if (fh && nativeIsSequential()) {
         size_t readBytes = 0;
-        int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
+//        int oldFlags = fcntl(QT_FILENO(fh), F_GETFL);
         for (int i = 0; i < 2; ++i) {
             // Unix: Make the underlying file descriptor non-blocking
-            if ((oldFlags & O_NONBLOCK) == 0)
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK);
+//            if ((oldFlags & O_NONBLOCK) == 0)
+//                fcntl(QT_FILENO(fh), F_SETFL, oldFlags | O_NONBLOCK);
 
             // Cross platform stdlib read
             size_t read = 0;
@@ -199,26 +199,26 @@ qint64 QFSFileEnginePrivate::nativeRead(char *data, qint64 len)
             }
 
             // Unix: Restore the blocking state of the underlying socket
-            if ((oldFlags & O_NONBLOCK) == 0) {
-                fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
-                if (readBytes == 0) {
-                    int readByte = 0;
-                    do {
-                        readByte = fgetc(fh);
-                    } while (readByte == -1 && errno == EINTR);
-                    if (readByte != -1) {
-                        *data = uchar(readByte);
-                        readBytes += 1;
-                    } else {
-                        break;
-                    }
-                }
-            }
+//            if ((oldFlags & O_NONBLOCK) == 0) {
+//                fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
+//                if (readBytes == 0) {
+//                    int readByte = 0;
+//                    do {
+//                        readByte = fgetc(fh);
+//                    } while (readByte == -1 && errno == EINTR);
+//                    if (readByte != -1) {
+//                        *data = uchar(readByte);
+//                        readBytes += 1;
+//                    } else {
+//                        break;
+//                    }
+//                }
+//            }
         }
         // Unix: Restore the blocking state of the underlying socket
-        if ((oldFlags & O_NONBLOCK) == 0) {
-            fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
-        }
+ //       if ((oldFlags & O_NONBLOCK) == 0) {
+ //           fcntl(QT_FILENO(fh), F_SETFL, oldFlags);
+ //       }
         if (readBytes == 0 && !feof(fh)) {
             // if we didn't read anything and we're not at EOF, it must be an error
             q->setError(QFile::ReadError, qt_error_string(errno));
@@ -546,108 +546,110 @@ bool QFSFileEngine::setFileTime(const QDateTime &newDate, FileTime time)
 
 uchar *QFSFileEnginePrivate::map(qint64 offset, qint64 size, QFile::MemoryMapFlags flags)
 {
-    qint64 maxFileOffset = std::numeric_limits<QT_OFF_T>::max();
-#if (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && Q_PROCESSOR_WORDSIZE == 4
-    // The Linux mmap2 system call on 32-bit takes a page-shifted 32-bit
-    // integer so the maximum offset is 1 << (32+12) (the shift is always 12,
-    // regardless of the actual page size). Unfortunately, the mmap64()
-    // function is known to be broken in all Linux libcs (glibc, uclibc, musl
-    // and Bionic): all of them do the right shift, but don't confirm that the
-    // result fits into the 32-bit parameter to the kernel.
-
-    maxFileOffset = qMin((Q_INT64_C(1) << (32+12)) - 1, maxFileOffset);
-#endif
-
-    Q_Q(QFSFileEngine);
-    if (openMode == QIODevice::NotOpen) {
-        q->setError(QFile::PermissionsError, qt_error_string(EACCES));
-        return nullptr;
-    }
-
-    if (offset < 0 || offset > maxFileOffset
-            || size < 0 || quint64(size) > quint64(size_t(-1))) {
-        q->setError(QFile::UnspecifiedError, qt_error_string(EINVAL));
-        return nullptr;
-    }
-
-    // If we know the mapping will extend beyond EOF, fail early to avoid
-    // undefined behavior. Otherwise, let mmap have its say.
-    if (doStat(QFileSystemMetaData::SizeAttribute)
-            && (QT_OFF_T(size) > metaData.size() - QT_OFF_T(offset)))
-        qWarning("QFSFileEngine::map: Mapping a file beyond its size is not portable");
-
-    int access = 0;
-    if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
-    if (openMode & QIODevice::WriteOnly) access |= PROT_WRITE;
-
-    int sharemode = MAP_SHARED;
-    if (flags & QFileDevice::MapPrivateOption) {
-        sharemode = MAP_PRIVATE;
-        access |= PROT_WRITE;
-    }
-
-#if defined(Q_OS_INTEGRITY)
-    int pageSize = sysconf(_SC_PAGESIZE);
-#else
-    int pageSize = getpagesize();
-#endif
-    int extra = offset % pageSize;
-
-    if (quint64(size + extra) > quint64((size_t)-1)) {
-        q->setError(QFile::UnspecifiedError, qt_error_string(EINVAL));
-        return nullptr;
-    }
-
-    size_t realSize = (size_t)size + extra;
-    QT_OFF_T realOffset = QT_OFF_T(offset);
-    realOffset &= ~(QT_OFF_T(pageSize - 1));
-
-    void *mapAddress = QT_MMAP((void*)nullptr, realSize,
-                   access, sharemode, nativeHandle(), realOffset);
-    if (MAP_FAILED != mapAddress) {
-        uchar *address = extra + static_cast<uchar*>(mapAddress);
-        maps[address] = {extra, realSize};
-        return address;
-    }
-
-    switch(errno) {
-    case EBADF:
-        q->setError(QFile::PermissionsError, qt_error_string(EACCES));
-        break;
-    case ENFILE:
-    case ENOMEM:
-        q->setError(QFile::ResourceError, qt_error_string(errno));
-        break;
-    case EINVAL:
-        // size are out of bounds
-    default:
-        q->setError(QFile::UnspecifiedError, qt_error_string(errno));
-        break;
-    }
-    return nullptr;
+	return nullptr;
+//    qint64 maxFileOffset = std::numeric_limits<QT_OFF_T>::max();
+//#if (defined(Q_OS_LINUX) || defined(Q_OS_ANDROID)) && Q_PROCESSOR_WORDSIZE == 4
+//    // The Linux mmap2 system call on 32-bit takes a page-shifted 32-bit
+//    // integer so the maximum offset is 1 << (32+12) (the shift is always 12,
+//    // regardless of the actual page size). Unfortunately, the mmap64()
+//    // function is known to be broken in all Linux libcs (glibc, uclibc, musl
+//    // and Bionic): all of them do the right shift, but don't confirm that the
+//    // result fits into the 32-bit parameter to the kernel.
+//
+//    maxFileOffset = qMin((Q_INT64_C(1) << (32+12)) - 1, maxFileOffset);
+//#endif
+//
+//    Q_Q(QFSFileEngine);
+//    if (openMode == QIODevice::NotOpen) {
+//        q->setError(QFile::PermissionsError, qt_error_string(EACCES));
+//        return nullptr;
+//    }
+//
+//    if (offset < 0 || offset > maxFileOffset
+//            || size < 0 || quint64(size) > quint64(size_t(-1))) {
+//        q->setError(QFile::UnspecifiedError, qt_error_string(EINVAL));
+//        return nullptr;
+//    }
+//
+//    // If we know the mapping will extend beyond EOF, fail early to avoid
+//    // undefined behavior. Otherwise, let mmap have its say.
+//    if (doStat(QFileSystemMetaData::SizeAttribute)
+//            && (QT_OFF_T(size) > metaData.size() - QT_OFF_T(offset)))
+//        qWarning("QFSFileEngine::map: Mapping a file beyond its size is not portable");
+//
+//    int access = 0;
+//    if (openMode & QIODevice::ReadOnly) access |= PROT_READ;
+//    if (openMode & QIODevice::WriteOnly) access |= PROT_WRITE;
+//
+//    int sharemode = MAP_SHARED;
+//    if (flags & QFileDevice::MapPrivateOption) {
+//        sharemode = MAP_PRIVATE;
+//        access |= PROT_WRITE;
+//    }
+//
+//#if defined(Q_OS_INTEGRITY)
+//    int pageSize = sysconf(_SC_PAGESIZE);
+//#else
+//    int pageSize = getpagesize();
+//#endif
+//    int extra = offset % pageSize;
+//
+//    if (quint64(size + extra) > quint64((size_t)-1)) {
+//        q->setError(QFile::UnspecifiedError, qt_error_string(EINVAL));
+//        return nullptr;
+//    }
+//
+//    size_t realSize = (size_t)size + extra;
+//    QT_OFF_T realOffset = QT_OFF_T(offset);
+//    realOffset &= ~(QT_OFF_T(pageSize - 1));
+//
+//    void *mapAddress = QT_MMAP((void*)nullptr, realSize,
+//                   access, sharemode, nativeHandle(), realOffset);
+//    if (MAP_FAILED != mapAddress) {
+//        uchar *address = extra + static_cast<uchar*>(mapAddress);
+//        maps[address] = {extra, realSize};
+//        return address;
+//    }
+//
+//    switch(errno) {
+//    case EBADF:
+//        q->setError(QFile::PermissionsError, qt_error_string(EACCES));
+//        break;
+//    case ENFILE:
+//    case ENOMEM:
+//        q->setError(QFile::ResourceError, qt_error_string(errno));
+//        break;
+//    case EINVAL:
+//        // size are out of bounds
+//    default:
+//        q->setError(QFile::UnspecifiedError, qt_error_string(errno));
+//        break;
+//    }
+//    return nullptr;
 }
 
 bool QFSFileEnginePrivate::unmap(uchar *ptr)
 {
-#if !defined(Q_OS_INTEGRITY)
-    Q_Q(QFSFileEngine);
-    const auto it = std::as_const(maps).find(ptr);
-    if (it == maps.cend()) {
-        q->setError(QFile::PermissionsError, qt_error_string(EACCES));
-        return false;
-    }
-
-    uchar *start = ptr - it->start;
-    size_t len = it->length;
-    if (-1 == munmap(start, len)) {
-        q->setError(QFile::UnspecifiedError, qt_error_string(errno));
-        return false;
-    }
-    maps.erase(it);
-    return true;
-#else
-    return false;
-#endif
+	return false;
+//#if !defined(Q_OS_INTEGRITY)
+//    Q_Q(QFSFileEngine);
+//    const auto it = std::as_const(maps).find(ptr);
+//    if (it == maps.cend()) {
+//        q->setError(QFile::PermissionsError, qt_error_string(EACCES));
+//        return false;
+//    }
+//
+//    uchar *start = ptr - it->start;
+//    size_t len = it->length;
+//    if (-1 == munmap(start, len)) {
+//        q->setError(QFile::UnspecifiedError, qt_error_string(errno));
+//        return false;
+//    }
+//    maps.erase(it);
+//    return true;
+//#else
+//    return false;
+//#endif
 }
 
 /*!

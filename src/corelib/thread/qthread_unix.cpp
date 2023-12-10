@@ -32,7 +32,7 @@
 #include <cxxabi.h>
 #endif
 
-#include <sched.h>
+//#include <sched.h>
 #include <errno.h>
 
 #if defined(Q_OS_FREEBSD)
@@ -53,7 +53,7 @@
 #endif
 
 #if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
-#include <sys/prctl.h>
+//#include <sys/prctl.h>
 #endif
 
 #if defined(Q_OS_LINUX) && !defined(SCHED_IDLE)
@@ -240,13 +240,13 @@ QAbstractEventDispatcher *QThreadPrivate::createEventDispatcher(QThreadData *dat
 #if (defined(Q_OS_LINUX) || defined(Q_OS_DARWIN) || defined(Q_OS_QNX))
 static void setCurrentThreadName(const char *name)
 {
-#  if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
-    prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
-#  elif defined(Q_OS_DARWIN)
-    pthread_setname_np(name);
-#  elif defined(Q_OS_QNX)
-    pthread_setname_np(pthread_self(), name);
-#  endif
+//#  if defined(Q_OS_LINUX) && !defined(QT_LINUXBASE)
+//    prctl(PR_SET_NAME, (unsigned long)name, 0, 0, 0);
+//#  elif defined(Q_OS_DARWIN)
+//    pthread_setname_np(name);
+//#  elif defined(Q_OS_QNX)
+//    pthread_setname_np(pthread_self(), name);
+//#  endif
 }
 #endif
 
@@ -502,7 +502,7 @@ static void qt_nanosleep(timespec amount)
     // nanosleep is POSIX.1-1993
 
     int r;
-    EINTR_LOOP(r, nanosleep(&amount, &amount));
+    EINTR_LOOP(r, thrd_sleep(&amount, &amount));
 }
 
 void QThread::sleep(unsigned long secs)

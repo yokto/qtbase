@@ -10,6 +10,7 @@
 #include <qendian.h>
 #include <qmutex.h>
 #include <qobjectdefs.h>
+#include <random.h>
 
 #include <errno.h>
 
@@ -64,7 +65,7 @@ QBasicAtomicInteger<uint> qt_randomdevice_control = Q_BASIC_ATOMIC_INITIALIZER(0
 
 struct QRandomGenerator::SystemGenerator
 {
-#if QT_CONFIG(getentropy)
+#if 1 // QT_CONFIG(getentropy)
     static qsizetype fillBuffer(void *buffer, qsizetype count) noexcept
     {
         // getentropy can read at most 256 bytes, so break the reading

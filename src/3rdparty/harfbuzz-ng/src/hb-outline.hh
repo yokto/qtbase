@@ -51,7 +51,7 @@ struct hb_outline_vector_t
 {
   float normalize_len ()
   {
-    float len = hypotf (x, y);
+    float len = hypot (x, y);
     if (len)
     {
       x /= len;

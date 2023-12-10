@@ -101,7 +101,7 @@ function(qt_internal_add_linker_version_script target)
         )
         add_custom_target(${target}_version_script DEPENDS ${outfile})
         add_dependencies(${target} ${target}_version_script)
-        target_link_options(${target} PRIVATE "-Wl,--version-script,${outfile}")
+	##target_link_options(${target} PRIVATE "-Wl,--version-script,${outfile}")
     endif()
 endfunction()
 

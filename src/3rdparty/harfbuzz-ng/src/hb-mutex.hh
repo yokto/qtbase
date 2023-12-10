@@ -49,12 +49,12 @@
 
 #elif !defined(HB_NO_MT) && !defined(HB_MUTEX_IMPL_STD_MUTEX) && (defined(HAVE_PTHREAD) || defined(__APPLE__))
 
-#include <pthread.h>
-typedef pthread_mutex_t hb_mutex_impl_t;
-#define hb_mutex_impl_init(M)	pthread_mutex_init (M, nullptr)
-#define hb_mutex_impl_lock(M)	pthread_mutex_lock (M)
-#define hb_mutex_impl_unlock(M)	pthread_mutex_unlock (M)
-#define hb_mutex_impl_finish(M)	pthread_mutex_destroy (M)
+#include <threads.h>
+typedef mtx_t hb_mutex_impl_t;
+#define hb_mutex_impl_init(M)	mtx_init (M, mtx_plain)
+#define hb_mutex_impl_lock(M)	mtx_lock (M)
+#define hb_mutex_impl_unlock(M)	mtx_unlock (M)
+#define hb_mutex_impl_finish(M)	mtx_destroy (M)
 
 
 #elif !defined(HB_NO_MT) && !defined(HB_MUTEX_IMPL_STD_MUTEX) && defined(_WIN32)

@@ -17,7 +17,7 @@ include(CMakePushCheckState)
 if(QNX)
     find_library(LIBRESOLV socket)
 else()
-    find_library(LIBRESOLV resolv)
+    #find_library(LIBRESOLV resolv)
 endif()
 
 cmake_push_check_state()

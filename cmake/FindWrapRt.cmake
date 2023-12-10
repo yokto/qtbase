@@ -13,7 +13,7 @@ set(WrapRt_FOUND OFF)
 include(CheckCXXSourceCompiles)
 include(CMakePushCheckState)
 
-find_library(LIBRT rt)
+#find_library(LIBRT rt)
 
 cmake_push_check_state()
 if(LIBRT)

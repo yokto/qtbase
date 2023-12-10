@@ -23,7 +23,7 @@
 #include <errno.h>
 #include <limits.h>
 #ifndef Q_OS_INTEGRITY
-#include <sys/param.h> // to use MAXSYMLINKS constant
+//#include <sys/param.h> // to use MAXSYMLINKS constant
 #endif
 #include <unistd.h>    // to use _SC_SYMLOOP_MAX constant
 
@@ -1385,24 +1385,25 @@ private:
     // Any chain of symlinks longer than this is assumed to be a loop:
     static long getSymloopMax()
     {
-#ifdef SYMLOOP_MAX
-        // If defined, at runtime it can only be greater than this, so this is a safe bet:
-        return SYMLOOP_MAX;
-#else
-        errno = 0;
-        long result = sysconf(_SC_SYMLOOP_MAX);
-        if (result >= 0)
-            return result;
-        // result is -1, meaning either error or no limit
-        Q_ASSERT(!errno); // ... but it can't be an error, POSIX mandates _SC_SYMLOOP_MAX
-
-        // therefore we can make up our own limit
-#  ifdef MAXSYMLINKS
-        return MAXSYMLINKS;
-#  else
-        return 8;
-#  endif
-#endif
+	    return 8;
+//#ifdef SYMLOOP_MAX
+//        // If defined, at runtime it can only be greater than this, so this is a safe bet:
+//        return SYMLOOP_MAX;
+//#else
+//        errno = 0;
+//        long result = sysconf(_SC_SYMLOOP_MAX);
+//        if (result >= 0)
+//            return result;
+//        // result is -1, meaning either error or no limit
+//        Q_ASSERT(!errno); // ... but it can't be an error, POSIX mandates _SC_SYMLOOP_MAX
+//
+//        // therefore we can make up our own limit
+//#  ifdef MAXSYMLINKS
+//        return 8;
+//#  else
+//        return 8;
+//#  endif
+//#endif
     }
 };
 }

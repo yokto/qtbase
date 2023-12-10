@@ -6,7 +6,7 @@ if(TARGET WrapBacktrace::WrapBacktrace)
     return()
 endif()
 
-find_package(Backtrace)
+#find_package(Backtrace)
 
 if(Backtrace_FOUND)
     add_library(WrapBacktrace::WrapBacktrace INTERFACE IMPORTED)

@@ -51,6 +51,8 @@ qt_set_symbol_visibility_hidden(BundledPcre2)
 ## Scopes:
 #####################################################################
 
+qt_internal_extend_target(BundledPcre2 DEFINES PCRE2_DISABLE_JIT)
+
 qt_internal_extend_target(BundledPcre2 CONDITION QNX OR UIKIT
     DEFINES
         PCRE2_DISABLE_JIT

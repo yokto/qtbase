@@ -25,6 +25,7 @@
  * Google Author(s): Behdad Esfahbod
  */
 
+#include <stdint.h>
 #include "hb.hh"
 
 #include "hb-aat-layout.hh"
