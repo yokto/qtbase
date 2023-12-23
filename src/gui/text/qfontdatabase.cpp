@@ -1335,7 +1335,9 @@ QFontDatabasePrivate *QFontDatabasePrivate::ensureFontDatabase()
         auto *platformFontDatabase = QGuiApplicationPrivate::platformIntegration()->fontDatabase();
         platformFontDatabase->populateFontDatabase();
 
+        qWarning() << "populated\n";
         for (int i = 0; i < d->applicationFonts.size(); i++) {
+            qWarning() << "populatedx\n";
             auto *font = &d->applicationFonts[i];
             if (!font->isNull() && !font->isPopulated())
                 platformFontDatabase->addApplicationFont(font->data, font->fileName, font);
@@ -2218,6 +2220,7 @@ bool QFontDatabasePrivate::isApplicationFont(const QString &fileName)
 */
 int QFontDatabase::addApplicationFont(const QString &fileName)
 {
+    qWarning() << "xxx\n";
     QByteArray data;
     if (!QFileInfo(fileName).isNativePath()) {
         QFile f(fileName);
@@ -2229,6 +2232,7 @@ int QFontDatabase::addApplicationFont(const QString &fileName)
         data = f.readAll();
     }
     QMutexLocker locker(fontDatabaseMutex());
+    qWarning() << "xxxx\n";
     return QFontDatabasePrivate::instance()->addAppFont(data, fileName);
 }
 

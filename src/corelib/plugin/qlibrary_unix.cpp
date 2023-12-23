@@ -163,28 +163,28 @@ bool QLibraryPrivate::load_sys()
         prefixes.append(QString());
     }
 
-#if defined(Q_PROCESSOR_X86) && !defined(Q_OS_DARWIN)
-    if (qCpuHasFeature(ArchHaswell)) {
-        auto transform = [](QStringList &list, void (*f)(QString *)) {
-            QStringList tmp;
-            qSwap(tmp, list);
-            list.reserve(tmp.size() * 2);
-            for (const QString &s : std::as_const(tmp)) {
-                QString modifiedPath = s;
-                f(&modifiedPath);
-                list.append(modifiedPath);
-                list.append(s);
-            }
-        };
-        if (pluginState == IsAPlugin) {
-            // add ".avx2" to each suffix in the list
-            transform(suffixes, [](QString *s) { s->append(".avx2"_L1); });
-        } else {
-            // prepend "haswell/" to each prefix in the list
-            transform(prefixes, [](QString *s) { s->prepend("haswell/"_L1); });
-        }
-    }
-#endif
+//#if defined(Q_PROCESSOR_X86) && !defined(Q_OS_DARWIN)
+//    if (qCpuHasFeature(ArchHaswell)) {
+//        auto transform = [](QStringList &list, void (*f)(QString *)) {
+//            QStringList tmp;
+//            qSwap(tmp, list);
+//            list.reserve(tmp.size() * 2);
+//            for (const QString &s : std::as_const(tmp)) {
+//                QString modifiedPath = s;
+//                f(&modifiedPath);
+//                list.append(modifiedPath);
+//                list.append(s);
+//            }
+//        };
+//        if (pluginState == IsAPlugin) {
+//            // add ".avx2" to each suffix in the list
+//            transform(suffixes, [](QString *s) { s->append(".avx2"_L1); });
+//        } else {
+//            // prepend "haswell/" to each prefix in the list
+//            transform(prefixes, [](QString *s) { s->prepend("haswell/"_L1); });
+//        }
+//    }
+//#endif
 
     locker.unlock();
     bool retry = true;

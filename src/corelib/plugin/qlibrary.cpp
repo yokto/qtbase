@@ -173,7 +173,7 @@ static QLibraryScanResult qt_find_pattern(const char *s, qsizetype s_len, QStrin
       to it being used in the plugin in the first place.
     */
 //#if defined(Q_OF_ELF)
-//    return QElfParser::parse({s, s_len}, errMsg);
+    return QElfParser::parse({s, s_len}, errMsg);
 //#elif defined(Q_OF_MACH_O)
 //    return QMachOParser::parse(s, s_len, errMsg);
 //#elif defined(Q_OS_WIN)
@@ -229,15 +229,15 @@ static QLibraryScanResult findPatternUnloaded(const QString &library, QLibraryPr
     qsizetype fdlen = qMin(file.size(), MaxMemoryMapSize);
     const char *filedata = reinterpret_cast<char *>(file.map(0, fdlen));
 
-#ifdef Q_OS_UNIX
-    if (filedata == nullptr) {
-        // If we can't mmap(), then the dynamic loader won't be able to either.
-        // This can't be used as a plugin.
-        qCWarning(qt_lcDebugPlugins, "%ls: failed to map to memory: %ls",
-                  qUtf16Printable(library), qUtf16Printable(file.errorString()));
-        return {};
-    }
-#else
+//#ifdef Q_OS_UNIX
+//    if (filedata == nullptr) {
+//        // If we can't mmap(), then the dynamic loader won't be able to either.
+//        // This can't be used as a plugin.
+//        qCWarning(qt_lcDebugPlugins, "%ls: failed to map to memory: %ls",
+//                  qUtf16Printable(library), qUtf16Printable(file.errorString()));
+//        return {};
+//    }
+//#else
     QByteArray data;
     if (filedata == nullptr) {
         // It's unknown at this point whether Windows supports LoadLibrary() on
@@ -247,7 +247,7 @@ static QLibraryScanResult findPatternUnloaded(const QString &library, QLibraryPr
         filedata = data.constData();
         fdlen = data.size();
     }
-#endif
+//#endif
 
     QString errMsg = library;
     QLibraryScanResult r = qt_find_pattern(filedata, fdlen, &errMsg);
@@ -727,6 +727,7 @@ void QLibraryPrivate::updatePluginState()
 #endif
 
     if (!pHnd.loadRelaxed()) {
+	    success = 1;
         // scan for the plugin metadata without loading
         QLibraryScanResult result = findPatternUnloaded(fileName, this);
 #if defined(Q_OF_MACH_O)

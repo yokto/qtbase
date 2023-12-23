@@ -1062,7 +1062,7 @@ qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND APPLE
 )
 qt_internal_extend_target(Core CONDITION QT_FEATURE_library AND UNIX AND NOT APPLE
     SOURCES
-    #        plugin/qelfparser_p.cpp plugin/qelfparser_p.h
+        plugin/qelfparser_p.cpp plugin/qelfparser_p.h
         plugin/qlibrary_unix.cpp
 )
 

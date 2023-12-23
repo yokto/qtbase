@@ -456,6 +456,7 @@ function(qt_internal_add_plugin target)
             qt_internal_apply_staging_prefix_build_rpath_workaround()
         endif()
     endif()
+    target_link_options(${target} PUBLIC "-Wl,-soname,/qtbase/${install_directory}/lib${output_name}.so")
 
     if (NOT arg_ALLOW_UNDEFINED_SYMBOLS)
         ### fixme: cmake is missing a built-in variable for this. We want to apply it only to

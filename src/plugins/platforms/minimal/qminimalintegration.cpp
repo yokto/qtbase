@@ -11,6 +11,8 @@
 #include <qpa/qplatformwindow.h>
 #include <qpa/qwindowsysteminterface.h>
 
+#include <QtGui/private//qfreetypefontdatabase_p.h>
+
 #if defined(Q_OS_WIN)
 #  include <QtGui/private/qwindowsfontdatabase_p.h>
 #  if QT_CONFIG(freetype)
@@ -46,6 +48,7 @@ static const char debugBackingStoreEnvironmentVariable[] = "QT_DEBUG_BACKINGSTOR
 static inline unsigned parseOptions(const QStringList &paramList)
 {
     unsigned options = 0;
+    options |= QMinimalIntegration::EnableFonts;
     for (const QString &param : paramList) {
         if (param == "enable_fonts"_L1)
             options |= QMinimalIntegration::EnableFonts;
@@ -61,6 +64,7 @@ QMinimalIntegration::QMinimalIntegration(const QStringList &parameters)
     : m_fontDatabase(nullptr)
     , m_options(parseOptions(parameters))
 {
+    qWarning() << "minint parameters" << parameters << "\n\n";
     if (qEnvironmentVariableIsSet(debugBackingStoreEnvironmentVariable)
         && qEnvironmentVariableIntValue(debugBackingStoreEnvironmentVariable) > 0) {
         m_options |= DebugBackingStore | EnableFonts;
@@ -102,6 +106,9 @@ public:
 
 QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
 {
+    if (!m_fontDatabase)
+        m_fontDatabase = new QFreeTypeFontDatabase;
+    return m_fontDatabase;
     if (!m_fontDatabase && (m_options & EnableFonts)) {
 #if defined(Q_OS_WIN)
         if (m_options & FreeTypeFontDatabase) {
@@ -131,6 +138,8 @@ QPlatformFontDatabase *QMinimalIntegration::fontDatabase() const
 #endif
         }
     }
+    qWarning() << "font dir " << m_fontDatabase->fontDir() << "\n";
+    qWarning() << "defa font " << m_fontDatabase->defaultFont() << "\n";
     if (!m_fontDatabase)
         m_fontDatabase = new DummyFontDatabase;
     return m_fontDatabase;

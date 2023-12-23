@@ -35,16 +35,17 @@ QPaintDevice *QMinimalBackingStore::paintDevice()
 
 void QMinimalBackingStore::flush(QWindow *window, const QRegion &region, const QPoint &offset)
 {
+    qWarning() << "xflush\n\n";
     Q_UNUSED(window);
     Q_UNUSED(region);
     Q_UNUSED(offset);
 
-    if (mDebug) {
+    //if (mDebug) {
         static int c = 0;
         QString filename = QString("output%1.png").arg(c++, 4, 10, QChar(u'0'));
         qDebug() << "QMinimalBackingStore::flush() saving contents to" << filename.toLocal8Bit().constData();
         mImage.save(filename);
-    }
+    //}
 }
 
 void QMinimalBackingStore::resize(const QSize &size, const QRegion &)

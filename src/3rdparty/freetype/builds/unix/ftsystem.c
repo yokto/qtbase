@@ -212,8 +212,9 @@
   FT_CALLBACK_DEF( void )
   ft_close_stream_by_munmap( FT_Stream  stream )
   {
-    munmap( (MUNMAP_ARG_CAST)stream->descriptor.pointer, stream->size );
+    //munmap( (MUNMAP_ARG_CAST)stream->descriptor.pointer, stream->size );
 
+    free(stream->base);
     stream->descriptor.pointer = NULL;
     stream->size               = 0;
     stream->base               = NULL;
@@ -307,12 +308,20 @@
     /* This cast potentially truncates a 64bit to 32bit! */
     stream->size = (unsigned long)stat_buf.st_size;
     stream->pos  = 0;
-    stream->base = (unsigned char *)mmap( NULL,
-                                          stream->size,
-                                          PROT_READ,
-                                          MAP_FILE | MAP_PRIVATE,
-                                          file,
-                                          0 );
+    stream->base = (unsigned char *)malloc(stream->size);
+    uint64_t read_bytes = 0;
+    for (int i = 0; i < 10; i++) {
+      if (stream->base == 0) { break; }
+      size_t res = read(file, stream->base + read_bytes, stream->size - read_bytes);
+      if (res < 0) { // probably should check EAGAIN
+        free(stream->base);
+        break;
+      }
+      read_bytes += res;
+      if (read_bytes >= stream->size) {
+        break;
+      }
+    }
 
     if ( stream->base != MAP_FAILED )
       stream->close = ft_close_stream_by_munmap;

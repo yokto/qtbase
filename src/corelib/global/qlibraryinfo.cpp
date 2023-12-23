@@ -314,6 +314,7 @@ static HMODULE getWindowsModuleHandle()
 
 static QString getRelocatablePrefix(QLibraryInfoPrivate::UsageMode usageMode)
 {
+	return "/_zwolf";
     QString prefixPath;
 
     // For static builds, the prefix will be the app directory.

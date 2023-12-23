@@ -242,6 +242,7 @@ QPlatformFontDatabase::~QPlatformFontDatabase()
 */
 void QPlatformFontDatabase::populateFontDatabase()
 {
+    //registerFontFamily("DejaVuSans");
 }
 
 /*!
@@ -253,6 +254,7 @@ void QPlatformFontDatabase::populateFontDatabase()
 */
 void QPlatformFontDatabase::populateFamily(const QString &familyName)
 {
+    //registerFont(familyName,QString(),QString(),QFont::Normal,QFont::StyleNormal,QFont::Unstretched,true,true,0,f->fixed,ws,nullptr);
     Q_UNUSED(familyName);
 }
 

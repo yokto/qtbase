@@ -1433,7 +1433,7 @@ void QGuiApplicationPrivate::createPlatformIntegration()
     QHighDpiScaling::initHighDpiScaling();
 
     // Load the platform integration
-    QString platformPluginPath = QString::fromLocal8Bit(qgetenv("QT_QPA_PLATFORM_PLUGIN_PATH"));
+    QString platformPluginPath = "/_zwolf/qtbase/x86_64/plugins/platforms";
 
 
     QByteArray platformName;

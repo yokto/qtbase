@@ -9,6 +9,7 @@
 #include "qhash.h"
 #include "qsocketnotifier.h"
 #include "qthread.h"
+#include "threads.h"
 
 #include "qeventdispatcher_unix_p.h"
 #include <private/qthread_p.h>
@@ -191,7 +192,7 @@ int QThreadPipe::check(const pollfd &pfd)
 QEventDispatcherUNIXPrivate::QEventDispatcherUNIXPrivate()
 {
     if (Q_UNLIKELY(threadPipe.init() == false))
-        qFatal("QEventDispatcherUNIXPrivate(): Cannot continue without a thread pipe");
+        qWarning("QEventDispatcherUNIXPrivate(): Cannot continue without a thread pipe");
 }
 
 QEventDispatcherUNIXPrivate::~QEventDispatcherUNIXPrivate()
@@ -290,6 +291,7 @@ QEventDispatcherUNIX::~QEventDispatcherUNIX()
 */
 void QEventDispatcherUNIX::registerTimer(int timerId, qint64 interval, Qt::TimerType timerType, QObject *obj)
 {
+	qWarning("registertimerxxx\n\n");
 #ifndef QT_NO_DEBUG
     if (timerId < 1 || interval < 0 || !obj) {
         qWarning("QEventDispatcherUNIX::registerTimer: invalid arguments");
@@ -345,6 +347,7 @@ bool QEventDispatcherUNIX::unregisterTimers(QObject *object)
 QList<QEventDispatcherUNIX::TimerInfo>
 QEventDispatcherUNIX::registeredTimers(QObject *object) const
 {
+	qWarning("registertimersxxx\n\n");
     if (!object) {
         qWarning("QEventDispatcherUNIX:registeredTimers: invalid argument");
         return QList<TimerInfo>();
@@ -360,6 +363,7 @@ QEventDispatcherUNIX::registeredTimers(QObject *object) const
 
 void QEventDispatcherUNIX::registerSocketNotifier(QSocketNotifier *notifier)
 {
+	qWarning("registersocket\n\n");
     Q_ASSERT(notifier);
     int sockfd = notifier->socket();
     QSocketNotifier::Type type = notifier->type();
@@ -464,21 +468,25 @@ bool QEventDispatcherUNIX::processEvents(QEventLoop::ProcessEventsFlags flags)
     d->pollfds.append(d->threadPipe.prepare());
 
     int nevents = 0;
+    
+    timespec remaining = { 0, 0 };
+    *tm = { 1000, 1000}; 
 
-    switch (qt_safe_poll(d->pollfds.data(), d->pollfds.size(), tm)) {
-    case -1:
-        qErrnoWarning("qt_safe_poll");
-        if (QT_CONFIG(poll_exit_on_error))
-            abort();
-        break;
-    case 0:
-        break;
-    default:
-        nevents += d->threadPipe.check(d->pollfds.takeLast());
-        if (include_notifiers)
-            nevents += d->activateSocketNotifiers();
-        break;
-    }
+    thrd_sleep(tm, &remaining);
+//    switch (qt_safe_poll(d->pollfds.data(), d->pollfds.size(), tm)) {
+//    case -1:
+//        qErrnoWarning("qt_safe_poll");
+//        if (QT_CONFIG(poll_exit_on_error))
+//            abort();
+//        break;
+//    case 0:
+//        break;
+//    default:
+//        nevents += d->threadPipe.check(d->pollfds.takeLast());
+//        if (include_notifiers)
+//            nevents += d->activateSocketNotifiers();
+//        break;
+//    }
 
     if (include_timers)
         nevents += d->activateTimers();
